@@ -4,21 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gazprom Stock Chart</title>
-    <script src="//telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
             background-color: #131722;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Шапка приложения */
         .header {
             padding: 15px;
             text-align: center;
@@ -39,37 +38,44 @@
             color: #848e9c;
         }
 
-        /* Контейнер для iframe-графика */
-        .chart-container {
+        /* Контейнер виджета */
+        .tradingview-widget-container {
             flex-grow: 1;
             width: 100%;
-            height: 100%;
-        }
-
-        /* Сам фрейм графика */
-        .chart-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+            height: calc(100vh - 74px); /* Вычитаем высоту шапки */
         }
     </style>
 </head>
 <body>
 
-    <!-- Шапка -->
     <div class="header">
         <h1>ПАО «Газпром»</h1>
         <p>Котировки акций (MOEX: GAZP)</p>
     </div>
 
-    <!-- График через прямой Iframe от TradingView -->
-    <div class="chart-container">
-        <iframe src="https://tradingview.com"></iframe>
+    <!-- Встраиваем код виджета через официальный JS-загрузчик TradingView -->
+    <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+        {
+            "autosize": true,
+            "symbol": "MOEX:GAZP",
+            "interval": "D",
+            "timezone": "Europe/Moscow",
+            "theme": "dark",
+            "style": "1",
+            "locale": "ru",
+            "enable_publishing": false,
+            "allow_symbol_change": false,
+            "calendar": false,
+            "support_host": "https://www.tradingview.com"
+        }
+        </script>
     </div>
 
     <script>
         window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand(); // Раскрываем приложение на весь экран
+        window.Telegram.WebApp.expand(); // Разворачиваем на максимум
     </script>
 </body>
 </html>
