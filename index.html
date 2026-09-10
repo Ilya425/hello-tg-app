@@ -21,14 +21,14 @@ button{border:0;background:none;color:inherit}
 .header-space{height:0}
 
 .filter{
-  height:122px;background:var(--panel2);display:flex;align-items:center;
-  justify-content:space-between;padding:22px 38px;
+  height:104px;background:var(--panel2);display:flex;align-items:center;
+  justify-content:space-between;padding:18px 24px;
   box-shadow:0 5px 14px rgba(0,0,0,.25)
 }
-.filter-title{font-size:25px;line-height:1.1}
-.filter-sub{font-size:17px;color:#bdbdc3;margin-top:9px}
-.arrow{color:#61d97a;font-size:24px;margin-left:35px}
-.clock{font-size:38px;opacity:.95;cursor:pointer}
+.filter-title{font-size:23px;line-height:1.1}
+.filter-sub{font-size:15px;color:#bdbdc3;margin-top:9px}
+.arrow{color:#61d97a;font-size:21px;margin-left:24px}
+.clock{font-size:33px;opacity:.95;cursor:pointer}
 
 .search{display:none;margin:12px 14px;height:46px;padding:0 14px;border-radius:12px;background:#45454c;align-items:center;gap:8px}
 .search.show{display:flex}
@@ -36,28 +36,79 @@ button{border:0;background:none;color:inherit}
 .search input::placeholder{color:#aaa}
 
 /* LIST */
-#listView{display:block}
 .list-row{
-  min-height:118px;display:grid;grid-template-columns:58px 100px 78px minmax(0,1fr);
-  align-items:center;gap:6px;padding:8px 10px;border-bottom:2px solid var(--line);
-  cursor:pointer
+  min-height:82px;
+  display:grid;
+  grid-template-columns:14% 27% 22% minmax(0,37%);
+  align-items:center;
+  gap:6px;
+  padding:7px 10px;
+  border-bottom:2px solid var(--line);
+  cursor:pointer;
 }
 .logo{
-  width:54px;height:54px;border-radius:50%;display:grid;place-items:center;
-  text-align:center;font-weight:800;font-size:14px;border:1px solid rgba(255,255,255,.12)
+  width:52px;height:52px;
+  border-radius:50%;
+  display:grid;place-items:center;
+  text-align:center;
+  font-weight:800;
+  font-size:14px;
+  border:1px solid rgba(255,255,255,.12);
 }
-.logo.red{background:#f21f43;color:#fff}.logo.yellow{background:#ffc82e;color:#111}
-.logo.blue{background:#0c0e14;color:#21d7ff}.logo.white{background:#f5f5f7;color:#333}
-.logo.green{background:#879e73;color:#8b1018}.logo.orange{background:#f7941d;color:#fff}
-.name{font-size:17px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ticker{font-size:12px;color:#bdbdc3;margin-top:6px;white-space:nowrap}
-.spark{width:78px;height:48px;display:block}
-.spark path{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
-.spark line{stroke-width:2;stroke-dasharray:5 5;opacity:.75}
-.list-price{text-align:right;font-size:18px;white-space:nowrap}
-.list-change{text-align:right;font-size:14px;color:var(--green);white-space:nowrap;margin-top:6px}
-.list-change.red{color:var(--red)}
+.logo.red{background:#f21f43;color:#fff}
+.logo.yellow{background:#ffc82e;color:#111}
+.logo.blue{background:#0c0e14;color:#21d7ff}
+.logo.white{background:#f5f5f7;color:#333}
+.logo.green{background:#879e73;color:#8b1018}
+.logo.orange{background:#f7941d;color:#fff}
+
 .list-right{min-width:0;overflow:hidden}
+.name{
+  font-size:18px;
+  font-weight:650;
+  line-height:1.05;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ticker{
+  display:block;
+  margin-top:5px;
+  font-size:12px;
+  line-height:1;
+  color:#bdbdc3;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.spark{
+  width:100%;
+  height:44px;
+  display:block;
+}
+.spark path{
+  fill:none;
+  stroke-width:3.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.spark line{stroke-width:1.8;stroke-dasharray:5 5;opacity:.75}
+
+.list-price{
+  text-align:right;
+  font-size:22px;
+  line-height:1.05;
+  white-space:nowrap;
+}
+.list-change{
+  text-align:right;
+  font-size:15px;
+  line-height:1.1;
+  color:var(--green);
+  white-space:nowrap;
+  margin-top:5px;
+}
+.list-change.red{color:var(--red)}
 
 /* MAP */
 #mapView{display:none;padding:16px}
@@ -115,9 +166,27 @@ button{border:0;background:none;color:inherit}
 .empty{padding:45px 20px;text-align:center;color:#aaa}
 
 @media(max-width:410px){
-  .list-row{grid-template-columns:70px minmax(0,1fr) 104px 136px;padding-left:10px;padding-right:10px}
-  .logo{width:58px;height:58px}.list-price{font-size:22px}.list-change{font-size:17px}.name{font-size:19px}.ticker{font-size:15px}
-  .map-grid{gap:10px}.card{min-height:154px;padding:11px 9px}.card .logo{width:43px;height:43px;min-width:43px}.card-ticker{font-size:23px}.card-price{font-size:22px}.card-change{font-size:16px}
+  .list-row{
+    grid-template-columns:13% 28% 21% minmax(0,38%);
+    min-height:76px;
+    gap:4px;
+    padding-left:7px;
+    padding-right:7px;
+  }
+  .logo{width:46px;height:46px;font-size:13px}
+  .name{font-size:16px}
+  .ticker{font-size:11px;margin-top:4px}
+  .spark{height:40px}
+  .list-price{font-size:19px}
+  .list-change{font-size:13px;margin-top:4px}
+  .map-grid{gap:8px}
+  .card{min-height:140px;padding:9px 7px}
+  .card .logo{width:38px;height:38px;min-width:38px}
+  .card-ticker{font-size:18px}
+  .card-price{font-size:19px}
+  .card-change{font-size:13px}
+  .subnav{height:72px}
+  .subbtn{font-size:16px}
 }
 </style>
 </head>
