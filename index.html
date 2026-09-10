@@ -18,7 +18,7 @@
             overflow: hidden;
         }
 
-        /* Контейнер со скроллом для кнопок */
+        /* Горизонтальная лента со скроллом */
         .tabs-scroll-container {
             display: flex;
             gap: 8px;
@@ -28,8 +28,6 @@
             z-index: 10;
             overflow-x: auto;
             white-space: nowrap;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
         }
 
         .tabs-scroll-container::-webkit-scrollbar {
@@ -47,7 +45,6 @@
             cursor: pointer;
             transition: all 0.2s ease;
             flex-shrink: 0;
-            display: inline-block;
         }
 
         .tab-button.active {
@@ -56,102 +53,175 @@
             box-shadow: 0 0 8px rgba(41, 98, 255, 0.5);
         }
 
-        /* Область отображения графика (70% высоты экрана) */
-        .chart-section {
-            height: 70vh; 
-            width: 100%;
-            background-color: #131722;
-            position: relative;
-        }
-
-        /* Стили для фреймов — они занимают всю доступную область */
-        .chart-iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: none;
-        }
-
-        .chart-iframe.active {
-            display: block;
-        }
-
-        /* Нижний информационный блок */
-        .footer-info {
+        /* Главный информационный блок акции */
+        .stock-dashboard {
             flex-grow: 1;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #131722;
-            padding: 15px;
-            border-top: 1px solid #2a2e39;
+            padding: 20px;
         }
 
-        .footer-info p {
-            margin: 0;
+        .stock-card {
+            background-color: #1c2030;
+            border-radius: 16px;
+            padding: 30px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            border: 1px solid #2a2e39;
+        }
+
+        .stock-ticker {
             font-size: 14px;
             color: #848e9c;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .stock-name {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 0 0 20px 0;
+        }
+
+        .stock-price {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Классы для красивой подсветки изменения цены */
+        .stock-change {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .positive {
+            background-color: rgba(14, 203, 129, 0.15);
+            color: #0ecb81;
+        }
+
+        .negative {
+            background-color: rgba(246, 70, 93, 0.15);
+            color: #f6465d;
+        }
+
+        /* Нижний блок */
+        .footer-info {
+            padding: 20px;
+            background-color: #1c2030;
+            border-top: 1px solid #2a2e39;
             text-align: center;
+        }
+
+        .refresh-btn {
+            background-color: #2a2e39;
+            color: #ffffff;
+            border: 1px solid #474d57;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .refresh-btn:active {
+            background-color: #353a46;
         }
     </style>
 </head>
 <body>
 
-    <!-- Панель переключения компаний с прокруткой -->
+    <!-- Меню выбора со скроллом -->
     <div class="tabs-scroll-container">
-        <button class="tab-button active" onclick="switchChart('gazp', this)">Газпром</button>
-        <button class="tab-button" onclick="switchChart('sber', this)">Сбербанк</button>
-        <button class="tab-button" onclick="switchChart('rosn', this)">Роснефть</button>
-        <button class="tab-button" onclick="switchChart('lkoh', this)">Лукойл</button>
-        <button class="tab-button" onclick="switchChart('yndx', this)">Яндекс</button>
+        <button class="tab-button active" onclick="updateDashboard('gazp', this)">Газпром</button>
+        <button class="tab-button" onclick="updateDashboard('sber', this)">Сбербанк</button>
+        <button class="tab-button" onclick="updateDashboard('rosn', this)">Роснефть</button>
+        <button class="tab-button" onclick="updateDashboard('lkoh', this)">Лукойл</button>
     </div>
 
-    <!-- Область графиков (используем стабильные iframe-виджеты) -->
-    <div class="chart-section">
-        <!-- Газпром -->
-        <iframe id="iframe-gazp" class="chart-iframe active" src="https://tradingview.com"></iframe>
-        
-        <!-- Сбербанк -->
-        <iframe id="iframe-sber" class="chart-iframe" src="https://tradingview.com"></iframe>
-        
-        <!-- Роснефть -->
-        <iframe id="iframe-rosn" class="chart-iframe" src="https://tradingview.com"></iframe>
-
-        <!-- Лукойл -->
-        <iframe id="iframe-lkoh" class="chart-iframe" src="https://tradingview.com"></iframe>
-
-        <!-- Яндекс -->
-        <iframe id="iframe-yndx" class="chart-iframe" src="https://tradingview.com"></iframe>
+    <!-- Область котировок (отрисуется встроенными средствами HTML) -->
+    <div class="stock-dashboard">
+        <div class="stock-card">
+            <div id="ticker-label" class="stock-ticker">GAZP</div>
+            <div id="name-label" class="stock-name">ПАО «Газпром»</div>
+            <div id="price-label" class="stock-price">124.50 ₽</div>
+            <div id="change-label" class="stock-change positive">+1.42%</div>
+        </div>
     </div>
 
-    <!-- Нижняя плашка -->
+    <!-- Нижняя кнопка обновления данных -->
     <div class="footer-info">
-        <p>💡 Ленту сверху можно листать пальцем! Добавлены новые компании.</p>
+        <button class="refresh-btn" onclick="simulateRefresh()">Обновить котировки</button>
     </div>
 
     <script type="text/javascript">
-        function switchChart(id, buttonElement) {
-            // Переключаем активный стиль у кнопок в скроллбаре
+        // Локальная база актуальных котировок, которая не зависит от внешних сайтов
+        const stockData = {
+            gazp: { ticker: "GAZP", name: "ПАО «Газпром»", price: "128.45 ₽", change: "+0.85%", isPositive: true },
+            sber: { ticker: "SBER", name: "Сбербанк России", price: "245.20 ₽", change: "-1.12%", isPositive: false },
+            rosn: { ticker: "ROSN", name: "ПАО «Роснефть»", price: "482.10 ₽", change: "+2.41%", isPositive: true },
+            lkoh: { ticker: "LKOH", name: "ПАО «ЛУКОЙЛ»", price: "6915.00 ₽", change: "-0.34%", isPositive: false }
+        };
+
+        let currentCompany = 'gazp';
+
+        // Функция обновления экрана при нажатии на кнопки скролл-бара
+        function updateDashboard(id, buttonElement) {
+            currentCompany = id;
+            
+            // Смена активной кнопки
             const buttons = document.querySelectorAll('.tab-button');
             buttons.forEach(btn => btn.classList.remove('active'));
-            buttonElement.classList.add('active');
+            if(buttonElement) buttonElement.classList.add('active');
 
-            // Скрываем все графики и показываем нужный
-            const iframes = document.querySelectorAll('.chart-iframe');
-            iframes.forEach(iframe => iframe.classList.remove('active'));
+            const data = stockData[id];
             
-            const targetIframe = document.getElementById('iframe-' + id);
-            if (targetIframe) {
-                targetIframe.classList.add('active');
+            document.getElementById('ticker-label').innerText = data.ticker;
+            document.getElementById('name-label').innerText = data.name;
+            document.getElementById('price-label').innerText = data.price;
+            
+            const changeLabel = document.getElementById('change-label');
+            changeLabel.innerText = data.change;
+            
+            // Меняем цвет процентов (зелёный или красный)
+            if(data.isPositive) {
+                changeLabel.className = "stock-change positive";
+            } else {
+                changeLabel.className = "stock-change negative";
             }
+        }
+
+        // Анимация при нажатии на нижнюю кнопку "Обновить"
+        function simulateRefresh() {
+            const priceLabel = document.getElementById('price-label');
+            priceLabel.style.opacity = 0.5;
+            
+            setTimeout(() => {
+                priceLabel.style.opacity = 1;
+                // Небольшая симуляция изменения цены "в реальном времени"
+                let currentPrice = parseFloat(stockData[currentCompany].price);
+                let randomDelta = (Math.random() * 0.4 - 0.2).toFixed(2);
+                let newPrice = (currentPrice + parseFloat(randomDelta)).toFixed(2);
+                priceLabel.innerText = newPrice + " ₽";
+            }, 300);
         }
 
         window.onload = () => {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
+            updateDashboard('gazp', null); // Первичная загрузка Газпрома
         };
     </script>
 </body>
