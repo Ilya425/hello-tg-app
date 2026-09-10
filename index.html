@@ -7,48 +7,279 @@
 <title>MOEX Stocks</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{--bg:#303036;--panel:#29292f;--panel2:#3a3a41;--line:#4b4b53;--text:#f4f4f6;--muted:#b9b9bf;--green:#78ef8a;--red:#e86b72;--accent:#ff4f87;--teal:#45d0c2}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Arial,sans-serif}button,input{font:inherit}button{border:0;background:none;color:inherit}.app{width:100%;max-width:520px;min-height:100vh;margin:auto;background:var(--bg);padding-bottom:82px;overflow:hidden}.top{position:sticky;top:0;z-index:20;background:var(--panel);padding-top:max(8px,env(safe-area-inset-top));box-shadow:0 3px 12px #0005}.titlebar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 18px}.close{font-size:20px}.brand{text-align:center}.brand strong{display:block;font-size:25px}.brand span{color:#aaa;font-size:16px}.more{width:42px;height:42px;border:2px solid #eee;border-radius:50%;font-size:21px;letter-spacing:2px}.filter{display:flex;align-items:center;justify-content:space-between;padding:15px 22px 17px;background:var(--panel2)}.filter .label{font-size:23px}.filter small{display:block;color:#bdbdc2;font-size:17px;margin-top:4px}.down{color:#62db79;margin-left:24px}.clock{font-size:32px}.search{margin:12px 14px 4px;padding:0 15px;height:44px;border-radius:13px;background:#424249;display:none;align-items:center;gap:9px}.search.show{display:flex}.search input{width:100%;background:none;border:0;outline:0;color:white}.stock{min-height:132px;display:grid;grid-template-columns:82px 1fr 145px;align-items:center;gap:4px;padding:10px 16px;border-bottom:2px solid var(--line);cursor:pointer}.logo{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;background:#17181d;color:#fff;font-weight:800;text-align:center;border:1px solid #fff2}.logo.green{background:#849e72;color:#8b1118;font-size:19px}.logo.yellow{background:#ffc72c;color:#111;font-size:23px}.logo.white{background:#f5f5f7;color:#303036}.logo.blue{background:#0b0d13;color:#18d7ff}.name{font-size:20px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ticker{font-size:16px;color:#bdbdc3;margin-top:7px}.right{text-align:right}.spark{width:112px;height:50px;display:block;margin:0 0 1px auto}.spark path{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.spark line{stroke-width:2;stroke-dasharray:5 5;opacity:.75}.price{font-size:24px;white-space:nowrap}.change{font-size:18px;margin-top:5px;color:var(--green);white-space:nowrap}.change.red{color:var(--red)}.bottom{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:520px;height:82px;z-index:30;padding-bottom:max(6px,env(safe-area-inset-bottom));background:#28282e;border-top:1px solid #44444b;display:grid;grid-template-columns:repeat(5,1fr)}.nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#bcbcc1}.nav .ico{font-size:25px;line-height:1}.nav span{font-size:14px}.nav.active{color:var(--teal)}.badge{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#eee;color:#159c32;font-size:16px;margin-top:-17px}.detail{display:none;min-height:100vh;background:var(--bg)}.detail.show{display:block}.detail-head{padding:18px;background:var(--panel);display:flex;align-items:center;gap:12px}.back{font-size:30px}.detail-title strong{display:block;font-size:21px}.detail-title span{color:#aaa;font-size:15px}.hero{padding:24px 20px 18px;background:var(--panel)}.bigprice{font-size:39px;font-weight:600}.bigchange{font-size:20px;color:var(--green);margin-top:7px}.chartbox{margin:14px 0 0;background:#38383f;border-radius:16px;padding:15px}.chart{width:100%;height:220px;display:block}.periods{display:flex;justify-content:space-between;color:#aaa}.periods button{padding:7px 10px;border-radius:8px;color:#aaa}.periods button.active{background:#505058;color:#fff}.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}.stat{background:var(--bg);padding:17px 20px}.stat small{color:#aaa;display:block;margin-bottom:6px}.stat b{font-size:18px}.alert{margin:18px 20px;padding:15px;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;text-align:center;width:calc(100% - 40px)}@media(min-width:700px){body{background:#111}.app{box-shadow:0 0 35px #0007}}
+:root{
+  --bg:#303036;--panel:#29292f;--panel2:#3b3b42;--line:#4a4a51;
+  --text:#f4f4f6;--muted:#b9b9bf;--green:#78ef8a;--red:#df686f;
+  --teal:#45d0c2;--pink:#ff4f87;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input{font:inherit}
+button{border:0;background:none;color:inherit}
+.app{min-height:100vh;max-width:520px;margin:auto;background:var(--bg);padding-bottom:164px}
+.header-space{height:0}
+
+.filter{
+  height:140px;background:var(--panel2);display:flex;align-items:center;
+  justify-content:space-between;padding:22px 38px;
+  box-shadow:0 5px 14px rgba(0,0,0,.25)
+}
+.filter-title{font-size:28px;line-height:1.1}
+.filter-sub{font-size:20px;color:#bdbdc3;margin-top:9px}
+.arrow{color:#61d97a;font-size:24px;margin-left:35px}
+.clock{font-size:38px;opacity:.95;cursor:pointer}
+
+.search{display:none;margin:12px 14px;height:46px;padding:0 14px;border-radius:12px;background:#45454c;align-items:center;gap:8px}
+.search.show{display:flex}
+.search input{flex:1;background:none;border:0;outline:0;color:#fff}
+.search input::placeholder{color:#aaa}
+
+/* LIST */
+#listView{display:block}
+.list-row{
+  min-height:132px;display:grid;grid-template-columns:82px minmax(0,1fr) 120px 154px;
+  align-items:center;gap:8px;padding:10px 15px;border-bottom:2px solid var(--line);
+  cursor:pointer
+}
+.logo{
+  width:67px;height:67px;border-radius:50%;display:grid;place-items:center;
+  text-align:center;font-weight:800;font-size:17px;border:1px solid rgba(255,255,255,.12)
+}
+.logo.red{background:#f21f43;color:#fff}.logo.yellow{background:#ffc82e;color:#111}
+.logo.blue{background:#0c0e14;color:#21d7ff}.logo.white{background:#f5f5f7;color:#333}
+.logo.green{background:#879e73;color:#8b1018}.logo.orange{background:#f7941d;color:#fff}
+.name{font-size:21px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticker{font-size:17px;color:#bdbdc3;margin-top:8px}
+.spark{width:120px;height:58px;display:block}
+.spark path{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.spark line{stroke-width:2;stroke-dasharray:5 5;opacity:.75}
+.list-price{text-align:right;font-size:25px;white-space:nowrap}
+.list-change{text-align:right;font-size:19px;color:var(--green);white-space:nowrap;margin-top:6px}
+.list-change.red{color:var(--red)}
+.list-right{min-width:0}
+
+/* MAP */
+#mapView{display:none;padding:16px}
+.map-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{
+  min-height:168px;border-radius:8px;padding:14px 12px 13px;
+  display:flex;flex-direction:column;cursor:pointer;overflow:hidden
+}
+.card.up-dark{background:#299332}.card.up{background:#35bb46}
+.card.up-light{background:#9ee5a5}.card.down{background:#e86b70}
+.card.down-dark{background:#b51a1d}.card.neutral{background:#cbbc91}
+.card-head{display:flex;align-items:center;gap:9px;min-width:0}
+.card .logo{width:51px;height:51px;min-width:51px;font-size:14px}
+.card-ticker{font-size:27px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-price{font-size:27px;text-align:center;margin-top:13px;white-space:nowrap}
+.card-change{font-size:19px;text-align:center;margin-top:7px;white-space:nowrap}
+
+/* SUBMENU */
+.subnav{
+  position:fixed;left:50%;bottom:86px;transform:translateX(-50%);
+  width:100%;max-width:520px;height:78px;display:grid;grid-template-columns:1fr 1fr;
+  background:#414147;border:1px solid #505058;border-radius:7px 7px 0 0;z-index:30
+}
+.subbtn{font-size:22px;font-weight:600;color:#c4c4c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.subbtn .miniico{font-size:34px;line-height:.65}.subbtn.active{color:var(--pink)}
+.subbtn.active::after{content:"";height:4px;background:var(--pink);width:100%;position:absolute;bottom:0}
+.subbtn .listico{font-size:33px;letter-spacing:-7px;padding-right:7px}
+
+/* FOOTER */
+.bottom{
+  position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:520px;
+  height:86px;background:#28282e;border-top:1px solid #47474d;z-index:31;
+  padding-bottom:max(5px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr)
+}
+.nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#bcbcc1}
+.nav .ico{font-size:27px;line-height:1}
+.nav span{font-size:15px}.nav.active{color:var(--teal)}
+.badge{width:58px;height:58px;border-radius:50%;background:#f2f2f4;color:#159d36;display:grid;place-items:center;font-size:17px;margin-top:-19px}
+
+/* DETAIL */
+.detail{display:none;min-height:100vh;background:var(--bg)}
+.detail.show{display:block}
+.detail-head{height:75px;background:var(--panel);display:flex;align-items:center;gap:12px;padding:0 18px}
+.back{font-size:36px}.detail-title strong{display:block;font-size:21px}.detail-title span{font-size:15px;color:#aaa}
+.hero{padding:25px 18px;background:var(--panel)}
+.bigprice{font-size:38px}.bigchange{font-size:20px;margin-top:7px;color:var(--green)}
+.chartbox{margin-top:18px;background:#38383f;border-radius:15px;padding:15px}
+.chart{width:100%;height:230px;display:block}
+.periods{display:flex;justify-content:space-between;color:#aaa}.periods button{padding:7px 10px;border-radius:8px}
+.periods button.active{background:#505058;color:#fff}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+.stat{background:var(--bg);padding:17px 20px}.stat small{display:block;color:#aaa;margin-bottom:6px}
+.alert{display:block;margin:18px auto;padding:15px;width:calc(100% - 40px);border-radius:12px;background:var(--pink);color:#fff;font-weight:700}
+
+.empty{padding:45px 20px;text-align:center;color:#aaa}
+
+@media(max-width:410px){
+  .list-row{grid-template-columns:70px minmax(0,1fr) 104px 136px;padding-left:10px;padding-right:10px}
+  .logo{width:58px;height:58px}.list-price{font-size:22px}.list-change{font-size:17px}.name{font-size:19px}.ticker{font-size:15px}
+  .map-grid{gap:10px}.card{min-height:154px;padding:11px 9px}.card .logo{width:43px;height:43px;min-width:43px}.card-ticker{font-size:23px}.card-price{font-size:22px}.card-change{font-size:16px}
+}
 </style>
 </head>
 <body>
 <div class="app">
 <section id="market">
-<header class="top">
-<div class="titlebar"><button class="close" onclick="closeApp()">Закрыть</button><div class="brand"><strong>MOEX Stocks</strong><span>мини-приложение</span></div><button class="more" onclick="toggleSearch()">•••</button></div>
-<div class="filter"><div><div class="label">Изменение цены <span class="down">▼</span></div><small>Акции МОEX</small></div><div class="clock">◷</div></div>
-</header>
-<div class="search" id="searchBox">⌕<input id="search" placeholder="Найти акцию..." oninput="renderStocks()"></div>
-<main id="stockList"></main>
+  <div class="filter">
+    <div>
+      <div class="filter-title">Изменение цены <span class="arrow">▼</span></div>
+      <div class="filter-sub">Акции МОEX</div>
+    </div>
+    <button class="clock" onclick="toggleSearch()" aria-label="Поиск">◷</button>
+  </div>
+
+  <div class="search" id="searchBox">
+    <span>⌕</span><input id="search" placeholder="Найти акцию..." oninput="render()">
+  </div>
+
+  <div id="listView"></div>
+  <div id="mapView"><div class="map-grid" id="mapGrid"></div></div>
 </section>
-<section class="detail" id="detail">
-<div class="detail-head"><button class="back" onclick="closeDetail()">‹</button><div class="detail-title" id="detailTitle"></div></div>
-<div class="hero"><div class="bigprice" id="detailPrice"></div><div class="bigchange" id="detailChange"></div><div class="chartbox"><svg class="chart" id="detailChart" viewBox="0 0 600 220" preserveAspectRatio="none"></svg><div class="periods"><button>1Д</button><button class="active">1Н</button><button>1М</button><button>3М</button><button>1Г</button></div></div></div>
-<div class="stats" id="stats"></div><button class="alert" onclick="setAlert()">🔔 Установить уведомление</button>
+
+<section id="detail" class="detail">
+  <div class="detail-head">
+    <button class="back" onclick="closeDetail()">‹</button>
+    <div class="detail-title" id="detailTitle"></div>
+  </div>
+  <div class="hero">
+    <div class="bigprice" id="detailPrice"></div>
+    <div class="bigchange" id="detailChange"></div>
+    <div class="chartbox">
+      <svg id="detailChart" class="chart" viewBox="0 0 600 230" preserveAspectRatio="none"></svg>
+      <div class="periods"><button>1Д</button><button class="active">1Н</button><button>1М</button><button>3М</button><button>1Г</button></div>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <button class="alert" onclick="setAlert()">🔔 Установить уведомление</button>
 </section>
-<nav class="bottom"><button class="nav" onclick="tab('Импульсы')"><div class="ico">✣</div><span>Импульсы</span></button><button class="nav active"><div class="badge">2286</div><span>IMOEX</span></button><button class="nav" onclick="tab('Листинг')"><div class="ico">⌁</div><span>Листинг</span></button><button class="nav" onclick="tab('Поток')"><div class="ico">◉</div><span>Поток</span></button><button class="nav" onclick="tab('Профиль')"><div class="ico">⚙</div><span>Профиль</span></button></nav>
 </div>
+
+<div class="subnav" id="subnav">
+  <button id="listBtn" class="subbtn active" onclick="setView('list')"><span class="listico">☷</span>СПИСОК</button>
+  <button id="mapBtn" class="subbtn" onclick="setView('map')"><span class="miniico">⊞</span>КАРТА</button>
+</div>
+
+<nav class="bottom">
+  <button class="nav" onclick="tab('Импульсы')"><div class="ico">✣</div><span>Импульсы</span></button>
+  <button class="nav active"><div class="badge">2286</div><span>IMOEX</span></button>
+  <button class="nav" onclick="tab('Листинг')"><div class="ico">⌁</div><span>Листинг</span></button>
+  <button class="nav" onclick="tab('Поток')"><div class="ico">◉</div><span>Поток</span></button>
+  <button class="nav" onclick="tab('Профиль')"><div class="ico">⚙</div><span>Профиль</span></button>
+</nav>
+
 <script>
-const tg=window.Telegram?.WebApp; if(tg){tg.ready();tg.expand();}
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+
 const stocks=[
-['SBER','Сбербанк','349,85 ₽','+2,41%','+8,24 ₽','СБ','green',1,[35,38,32,42,48,45,55,60,58,68,73,70]],
-['LKOH','ЛУКОЙЛ','6 982,0 ₽','+1,84%','+126,0 ₽','Л','yellow',1,[30,35,31,40,45,43,50,56,52,61,66,69]],
-['GAZP','Газпром','134,80 ₽','-0,74%','-1,01 ₽','G','blue',0,[70,64,67,59,63,54,51,55,47,43,45,39]],
-['YDEX','Яндекс','6 845,0 ₽','+3,22%','+213,0 ₽','Я','white',1,[28,32,31,38,44,40,51,48,60,57,66,72]],
-['T','Т-Технологии','4 186,0 ₽','+2,67%','+109,0 ₽','T','yellow',1,[35,30,37,43,41,50,55,51,63,61,68,73]],
-['GMKN','Норникель','142,50 ₽','-1,12%','-1,62 ₽','N','blue',0,[70,66,69,62,59,61,54,57,51,47,49,44]],
-['NVTK','Новатэк ао','1 029,2 ₽','+5,12%','+50,1 ₽','▶','blue',1,[25,29,27,30,23,38,42,51,60,72,67,76]],
-['TATN','Татнефть','694,30 ₽','+1,93%','+13,10 ₽','T','white',1,[35,39,36,43,45,42,49,54,52,59,62,66]],
-['ROSN','Роснефть','349,55 ₽','+5,00%','+16,65 ₽','◆','yellow',1,[25,18,22,15,29,35,31,45,40,51,48,53]]];
-function spark(a,up){let mi=Math.min(...a),ma=Math.max(...a),p=a.map((v,i)=>[(i*112/(a.length-1)),48-(v-mi)/(ma-mi||1)*42]);let d=p.map((x,i)=>(i?'L':'M')+x[0].toFixed(1)+' '+x[1].toFixed(1)).join(' ');return `<svg class="spark" viewBox="0 0 112 50"><line x1="0" y1="${p[p.length-1][1]}" x2="112" y2="${p[p.length-1][1]}" stroke="${up?'#59d18a':'#e05e68'}"/><path d="${d}" stroke="${up?'#4ea987':'#c95761'}"/></svg>`}
-function renderStocks(){let q=document.getElementById('search').value.toLowerCase();document.getElementById('stockList').innerHTML=stocks.filter(s=>!q||s[0].toLowerCase().includes(q)||s[1].toLowerCase().includes(q)).map(s=>`<article class="stock" onclick="openDetail('${s[0]}')"><div class="logo ${s[6]}">${s[5]}</div><div><div class="name">${s[1]}</div><div class="ticker">MOEX → ${s[0]}</div></div><div class="right">${spark(s[7],s[7])}<div class="price">${s[2]}</div><div class="change ${s[7]?'':'red'}">${s[3]} (${s[4]})</div></div></article>`).join('')}
-function toggleSearch(){document.getElementById('searchBox').classList.toggle('show');if(document.getElementById('searchBox').classList.contains('show'))document.getElementById('search').focus()}
-function openDetail(t){let s=stocks.find(x=>x[0]===t);document.getElementById('market').style.display='none';document.querySelector('.bottom').style.display='none';document.getElementById('detail').classList.add('show');document.getElementById('detailTitle').innerHTML=`<strong>${s[1]}</strong><span>MOEX → ${s[0]}</span>`;document.getElementById('detailPrice').textContent=s[2];document.getElementById('detailChange').textContent=`${s[3]} (${s[4]})`;document.getElementById('detailChange').style.color=s[7]?'var(--green)':'var(--red)';drawChart(s[8],s[7]);document.getElementById('stats').innerHTML=`<div class="stat"><small>Тикер</small><b>${s[0]}</b></div><div class="stat"><small>Биржа</small><b>MOEX</b></div><div class="stat"><small>Изменение</small><b>${s[3]}</b></div><div class="stat"><small>Последняя цена</small><b>${s[2]}</b></div>`;scrollTo(0,0)}
-function drawChart(a,up){let mi=Math.min(...a)-3,ma=Math.max(...a)+3,p=a.map((v,i)=>[10+i*580/(a.length-1),205-(v-mi)/(ma-mi)*190]),d=p.map((x,i)=>(i?'L':'M')+x[0]+' '+x[1]).join(' ');document.getElementById('detailChart').innerHTML=`<path d="${d+' L590 210 L10 210 Z'}" fill="url(#g)"/><path d="${d}" fill="none" stroke="${up?'#59c98a':'#df6069'}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><line x1="0" y1="105" x2="600" y2="105" stroke="#777" stroke-dasharray="6 8" opacity=".35"/><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-opacity=".22"/><stop offset="1" stop-opacity="0"/></linearGradient></defs>`}
-function closeDetail(){document.getElementById('detail').classList.remove('show');document.getElementById('market').style.display='block';document.querySelector('.bottom').style.display='grid'}
-function closeApp(){if(tg)tg.close();else alert('В Telegram Mini App окно закроется.')}
-function setAlert(){if(tg?.showAlert)tg.showAlert('Уведомления подключим на следующем этапе — через backend.');else alert('Уведомления подключим на следующем этапе — через backend.')}
-function tab(name){if(tg?.showAlert)tg.showAlert(name+' — следующий экран MVP.');else alert(name+' — следующий экран MVP.')}
-renderStocks();
+ {t:'LKOH',n:'ЛУКОЙЛ',p:'5 295,5 ₽',c:'+1,93%',d:'+100,5 ₽',l:'Л',cl:'red',card:'up-dark',up:true,a:[30,34,31,39,43,41,48,53,50,58,61,67]},
+ {t:'SBER',n:'Сбербанк',p:'280,88 ₽',c:'+1,39%',d:'+3,84 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[35,38,32,42,48,45,55,60,58,68,73,70]},
+ {t:'GAZP',n:'Газпром',p:'90,57 ₽',c:'+2,06%',d:'+1,83 ₽',l:'G',cl:'blue',card:'up-dark',up:true,a:[28,31,27,35,39,38,46,51,49,56,61,66]},
+ {t:'YDEX',n:'Яндекс',p:'3 816,00 ₽',c:'-0,469%',d:'18,00 ₽',l:'Я',cl:'red',card:'down',up:false,a:[68,63,66,58,61,54,57,49,52,44,42,37]},
+ {t:'TATN',n:'Татнефть',p:'622,7 ₽',c:'+0,793%',d:'+4,9 ₽',l:'✦',cl:'green',card:'up',up:true,a:[32,35,33,40,43,41,47,52,50,57,61,65]},
+ {t:'T',n:'Т-Технологии',p:'261,82 ₽',c:'+0,715%',d:'+1,86 ₽',l:'✥',cl:'yellow',card:'up',up:true,a:[34,37,34,42,45,44,50,54,52,57,62,64]},
+ {t:'NVTK',n:'Новатэк',p:'1 035,7 ₽',c:'+5,78%',d:'+56,6 ₽',l:'▶',cl:'blue',card:'up-dark',up:true,a:[20,24,21,28,25,38,43,50,60,72,69,78]},
+ {t:'GMKN',n:'Норникель',p:'131,98 ₽',c:'-1,90%',d:'2,56 ₽',l:'N',cl:'blue',card:'down-dark',up:false,a:[70,66,69,62,64,58,60,53,50,47,49,43]},
+ {t:'PLZL',n:'Полюс',p:'983,8 ₽',c:'+0,245%',d:'+2,4 ₽',l:'✣',cl:'yellow',card:'up-light',up:true,a:[43,45,42,47,49,48,51,54,52,55,57,59]},
+ {t:'VTBR',n:'ВТБ',p:'51,71 ₽',c:'+0,76%',d:'+0,39 ₽',l:'ВТБ',cl:'blue',card:'up',up:true,a:[39,40,38,43,47,45,49,53,51,55,57,60]},
+ {t:'X5',n:'X5',p:'1 803,0 ₽',c:'+0,055%',d:'+1,0 ₽',l:'X5',cl:'white',card:'neutral',up:true,a:[47,48,46,50,51,50,52,53,51,54,55,56]},
+ {t:'ROSN',n:'Роснефть',p:'351,70 ₽',c:'+5,65%',d:'+18,80 ₽',l:'◆',cl:'yellow',card:'up-dark',up:true,a:[22,18,25,20,32,38,35,48,44,55,51,62]},
+ {t:'SBERP',n:'Сбер пр.',p:'280,96 ₽',c:'+1,40%',d:'+3,89 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[34,36,32,41,46,44,50,55,53,62,66,71]},
+ {t:'OZON',n:'Ozon',p:'2 622,5 ₽',c:'+0,153%',d:'+4,0 ₽',l:'O',cl:'blue',card:'up-light',up:true,a:[43,45,42,46,48,47,50,52,51,53,54,56]},
+ {t:'SNGS',n:'Сургутнефтегаз',p:'16,600 ₽',c:'+2,95%',d:'+0,475 ₽',l:'С',cl:'blue',card:'up-dark',up:true,a:[28,30,27,33,38,36,43,48,47,52,58,63]},
+ {t:'SNGSP',n:'Сургут пр.',p:'41,725 ₽',c:'-0,631%',d:'0,265 ₽',l:'С',cl:'red',card:'down',up:false,a:[64,60,63,56,58,51,54,47,49,43,45,39]},
+ {t:'MOEX',n:'Московская биржа',p:'150,86 ₽',c:'+0,567%',d:'+0,85 ₽',l:'MOEX',cl:'red',card:'up',up:true,a:[35,37,34,41,44,43,49,52,51,56,60,63]},
+ {t:'CHMF',n:'Северсталь',p:'653,8 ₽',c:'+1,77%',d:'+11,4 ₽',l:'◆',cl:'blue',card:'up-dark',up:true,a:[30,33,31,38,41,40,47,51,49,54,58,61]},
+ {t:'MTSS',n:'МТС',p:'195,45 ₽',c:'+2,95%',d:'+5,60 ₽',l:'M',cl:'red',card:'up-dark',up:true,a:[32,35,31,39,44,42,49,54,51,58,62,67]},
+ {t:'ALRS',n:'АЛРОСА',p:'74,20 ₽',c:'+1,45%',d:'+1,06 ₽',l:'A',cl:'orange',card:'up',up:true,a:[34,36,33,40,43,42,47,51,49,54,57,60]},
+ {t:'NLMK',n:'НЛМК',p:'122,40 ₽',c:'+1,10%',d:'+1,33 ₽',l:'N',cl:'blue',card:'up-dark',up:true,a:[35,37,34,41,43,42,46,50,48,53,56,59]}
+];
+
+function spark(a,up){
+ const min=Math.min(...a),max=Math.max(...a);
+ const pts=a.map((v,i)=>[i*112/(a.length-1),48-(v-min)/(max-min||1)*42]);
+ const d=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+ return '<svg class="spark" viewBox="0 0 112 50"><line x1="0" y1="'+pts[pts.length-1][1]+'" x2="112" y2="'+pts[pts.length-1][1]+'" stroke="'+(up?'#59d18a':'#e05e68')+'"/><path d="'+d+'" stroke="'+(up?'#4ea987':'#c95761')+'"/></svg>';
+}
+
+function render(){
+ const q=(document.getElementById('search')?.value||'').trim().toLowerCase();
+ const list=stocks.filter(s=>!q||s.t.toLowerCase().includes(q)||s.n.toLowerCase().includes(q));
+
+ document.getElementById('listView').innerHTML=list.map(s=>`
+  <article class="list-row" onclick="openDetail('${s.t}')">
+    <div class="logo ${s.cl}">${s.l}</div>
+    <div class="list-right"><div class="name">${s.n}</div><div class="ticker">MOEX → ${s.t}</div></div>
+    ${spark(s.a,s.up)}
+    <div><div class="list-price">${s.p}</div><div class="list-change ${s.up?'':'red'}">${s.c} (${s.d})</div></div>
+  </article>
+ `).join('') || '<div class="empty">Ничего не найдено</div>';
+
+ document.getElementById('mapGrid').innerHTML=list.map(s=>`
+  <article class="card ${s.card}" onclick="openDetail('${s.t}')">
+    <div class="card-head"><div class="logo ${s.cl}">${s.l}</div><div class="card-ticker">${s.t}</div></div>
+    <div class="card-price">${s.p}</div>
+    <div class="card-change">${s.c} (${s.d})</div>
+  </article>
+ `).join('');
+}
+
+function setView(view){
+ const list=view==='list';
+ document.getElementById('listView').style.display=list?'block':'none';
+ document.getElementById('mapView').style.display=list?'none':'block';
+ document.getElementById('listBtn').classList.toggle('active',list);
+ document.getElementById('mapBtn').classList.toggle('active',!list);
+ window.scrollTo(0,0);
+}
+
+function toggleSearch(){
+ const b=document.getElementById('searchBox');b.classList.toggle('show');
+ if(b.classList.contains('show')) document.getElementById('search').focus();
+}
+
+function openDetail(t){
+ const s=stocks.find(x=>x.t===t); if(!s)return;
+ document.getElementById('market').style.display='none';
+ document.getElementById('subnav').style.display='none';
+ document.querySelector('.bottom').style.display='none';
+ document.getElementById('detail').classList.add('show');
+ document.getElementById('detailTitle').innerHTML='<strong>'+s.n+'</strong><span>MOEX → '+s.t+'</span>';
+ document.getElementById('detailPrice').textContent=s.p;
+ document.getElementById('detailChange').textContent=s.c+' ('+s.d+')';
+ document.getElementById('detailChange').style.color=s.up?'var(--green)':'var(--red)';
+ drawChart(s.a,s.up);
+ document.getElementById('stats').innerHTML=
+ '<div class="stat"><small>Тикер</small><b>'+s.t+'</b></div>'+
+ '<div class="stat"><small>Рынок</small><b>MOEX</b></div>'+
+ '<div class="stat"><small>Изменение</small><b>'+s.c+'</b></div>'+
+ '<div class="stat"><small>Цена</small><b>'+s.p+'</b></div>';
+ window.scrollTo(0,0);
+}
+
+function drawChart(a,up){
+ const min=Math.min(...a)-3,max=Math.max(...a)+3;
+ const pts=a.map((v,i)=>[10+i*580/(a.length-1),205-(v-min)/(max-min)*190]);
+ const d=pts.map((q,i)=>(i?'L':'M')+q[0]+' '+q[1]).join(' ');
+ document.getElementById('detailChart').innerHTML=
+ '<path d="'+d+' L590 210 L10 210 Z" fill="url(#g)"/>'+
+ '<path d="'+d+'" fill="none" stroke="'+(up?'#59c98a':'#df6069')+'" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
+ '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-opacity=".22"/><stop offset="1" stop-opacity="0"/></linearGradient></defs>';
+}
+function closeDetail(){
+ document.getElementById('detail').classList.remove('show');
+ document.getElementById('market').style.display='block';
+ document.getElementById('subnav').style.display='grid';
+ document.querySelector('.bottom').style.display='grid';
+}
+function setAlert(){tg?.showAlert?.('Уведомления подключим после добавления backend.')}
+function tab(name){tg?.showAlert?.(name+' — следующий экран MVP.')}
+
+render();
 </script>
-</body></html>
+</body>
+</html>
