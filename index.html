@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Running Cat Mini App</title>
-    <!-- Подключаем скрипт без протокола, так он точно не обрежется -->
     <script src="//telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -14,34 +13,75 @@
             overflow: hidden;
             height: 100vh;
             position: relative;
+            font-family: sans-serif;
         }
 
-        /* Наш котик теперь — это текстовый эмодзи огромного размера */
+        /* Наш котик */
         #cat {
             position: absolute;
-            top: 45vh;
+            top: 40vh;
             left: 0px;
-            font-size: 70px; /* Размер котика */
+            font-size: 70px;
             line-height: 1;
             user-select: none;
             transition: transform 0.1s linear;
+        }
+
+        /* Контейнер для кнопки, чтобы она была ровно по центру снизу */
+        .button-container {
+            position: absolute;
+            bottom: 50px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Стильная кнопка управления */
+        #control-btn {
+            background-color: #ff4d4d; /* Красный цвет */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+
+        /* Эффект при нажатии кнопки */
+        #control-btn:active {
+            background-color: #cc0000;
+            transform: scale(0.98);
         }
     </style>
 </head>
 <body>
 
-    <!-- Наш пиксельный котик прямо в коде! -->
+    <!-- Котик -->
     <div id="cat">🐈</div>
+
+    <!-- Кнопка укрощения кота -->
+    <div class="button-container">
+        <button id="control-btn" onclick="toggleCat()">СТОП КОРМЁЖКА!</button>
+    </div>
 
     <script>
         window.Telegram.WebApp.ready();
 
         const cat = document.getElementById('cat');
+        const btn = document.getElementById('control-btn');
+        
         let posX = 0;
-        let speed = 5; // Скорость бега котика
+        let speed = 5; 
         let direction = 1;
+        let isRunning = true; // Переменная, которая следит, бежит ли кот
 
         function animateCat() {
+            // Если кнопку нажали и бег остановлен — прерываем функцию анимации
+            if (!isRunning) return;
+
             const screenWidth = window.innerWidth;
             const catWidth = cat.offsetWidth;
 
@@ -49,15 +89,31 @@
 
             if (posX + catWidth >= screenWidth && direction === 1) {
                 direction = -1;
-                cat.style.transform = 'scaleX(-1)'; // Разворот влево
+                cat.style.transform = 'scaleX(-1)'; 
             }
             else if (posX <= 0 && direction === -1) {
                 direction = 1;
-                cat.style.transform = 'scaleX(1)';  // Разворот вправо
+                cat.style.transform = 'scaleX(1)';  
             }
 
             cat.style.left = posX + 'px';
             requestAnimationFrame(animateCat);
+        }
+
+        // Функция, которая срабатывает при клике на кнопку
+        function toggleCat() {
+            if (isRunning) {
+                // Если бежал — останавливаем
+                isRunning = false;
+                btn.innerText = "ПУСКАЙ БЕЖИТ!";
+                btn.style.backgroundColor = "#4cd137"; // Меняем цвет кнопки на зелёный
+            } else {
+                // Если стоял — запускаем обратно
+                isRunning = true;
+                btn.innerText = "СТОП КОРМЁЖКА!";
+                btn.style.backgroundColor = "#ff4d4d"; // Возвращаем красный цвет
+                animateCat(); // Перезапускаем анимацию
+            }
         }
 
         window.onload = () => {
