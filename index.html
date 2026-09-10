@@ -110,6 +110,22 @@ button{border:0;background:none;color:inherit}
 }
 .list-change.red{color:var(--red)}
 
+
+.logo.img-logo{
+  overflow:hidden;
+  background:#f4f4f5;
+}
+.logo.img-logo img{
+  width:72%;
+  height:72%;
+  object-fit:contain;
+  display:block;
+}
+.card .logo.img-logo img{
+  width:76%;
+  height:76%;
+}
+
 /* MAP */
 #mapView{display:none;padding:16px}
 .map-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
@@ -132,9 +148,9 @@ button{border:0;background:none;color:inherit}
   width:100%;max-width:520px;height:74px;display:grid;grid-template-columns:1fr 1fr;
   background:#414147;border:1px solid #505058;border-radius:7px 7px 0 0;z-index:30
 }
-.subbtn{font-size:22px;font-weight:600;color:#c4c4c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.subbtn{position:relative;font-size:22px;font-weight:600;color:#c4c4c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .subbtn .miniico{font-size:34px;line-height:.65}.subbtn.active{color:var(--pink)}
-.subbtn.active::after{content:"";height:4px;background:var(--pink);width:100%;position:absolute;bottom:0}
+.subbtn.active::after{content:"";height:3px;background:var(--pink);left:0;right:0;bottom:0;position:absolute}
 .subbtn .listico{font-size:33px;letter-spacing:-7px;padding-right:7px}
 
 /* FOOTER */
@@ -146,7 +162,7 @@ button{border:0;background:none;color:inherit}
 .nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#bcbcc1}
 .nav .ico{font-size:27px;line-height:1}
 .nav span{font-size:15px}.nav.active{color:var(--teal)}
-.badge{width:58px;height:58px;border-radius:50%;background:#f2f2f4;color:#159d36;display:grid;place-items:center;font-size:17px;margin-top:-19px}
+.badge{width:50px;height:50px;border-radius:50%;background:#f2f2f4;color:#159d36;display:grid;place-items:center;font-size:15px;margin-top:-11px}
 
 /* DETAIL */
 .detail{display:none;min-height:100vh;background:var(--bg)}
@@ -187,6 +203,7 @@ button{border:0;background:none;color:inherit}
   .card-change{font-size:13px}
   .subnav{height:72px}
   .subbtn{font-size:16px}
+  .badge{width:46px;height:46px;font-size:14px;margin-top:-8px}
 }
 </style>
 </head>
@@ -245,18 +262,18 @@ const tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
 
 const stocks=[
- {t:'LKOH',n:'ЛУКОЙЛ',p:'5 295,5 ₽',c:'+1,93%',d:'+100,5 ₽',l:'Л',cl:'red',card:'up-dark',up:true,a:[30,34,31,39,43,41,48,53,50,58,61,67]},
- {t:'SBER',n:'Сбербанк',p:'280,88 ₽',c:'+1,39%',d:'+3,84 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[35,38,32,42,48,45,55,60,58,68,73,70]},
- {t:'GAZP',n:'Газпром',p:'90,57 ₽',c:'+2,06%',d:'+1,83 ₽',l:'G',cl:'blue',card:'up-dark',up:true,a:[28,31,27,35,39,38,46,51,49,56,61,66]},
- {t:'YDEX',n:'Яндекс',p:'3 816,00 ₽',c:'-0,469%',d:'18,00 ₽',l:'Я',cl:'red',card:'down',up:false,a:[68,63,66,58,61,54,57,49,52,44,42,37]},
- {t:'TATN',n:'Татнефть',p:'622,7 ₽',c:'+0,793%',d:'+4,9 ₽',l:'✦',cl:'green',card:'up',up:true,a:[32,35,33,40,43,41,47,52,50,57,61,65]},
- {t:'T',n:'Т-Технологии',p:'261,82 ₽',c:'+0,715%',d:'+1,86 ₽',l:'✥',cl:'yellow',card:'up',up:true,a:[34,37,34,42,45,44,50,54,52,57,62,64]},
- {t:'NVTK',n:'Новатэк',p:'1 035,7 ₽',c:'+5,78%',d:'+56,6 ₽',l:'▶',cl:'blue',card:'up-dark',up:true,a:[20,24,21,28,25,38,43,50,60,72,69,78]},
- {t:'GMKN',n:'Норникель',p:'131,98 ₽',c:'-1,90%',d:'2,56 ₽',l:'N',cl:'blue',card:'down-dark',up:false,a:[70,66,69,62,64,58,60,53,50,47,49,43]},
+ {t:'LKOH',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/LUK%20OIL%20Logo.svg',n:'ЛУКОЙЛ',p:'5 295,5 ₽',c:'+1,93%',d:'+100,5 ₽',l:'Л',cl:'red',card:'up-dark',up:true,a:[30,34,31,39,43,41,48,53,50,58,61,67]},
+ {t:'SBER',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Logo%20Sberbank.svg',n:'Сбербанк',p:'280,88 ₽',c:'+1,39%',d:'+3,84 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[35,38,32,42,48,45,55,60,58,68,73,70]},
+ {t:'GAZP',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Gazprom%20logo.svg',n:'Газпром',p:'90,57 ₽',c:'+2,06%',d:'+1,83 ₽',l:'G',cl:'blue',card:'up-dark',up:true,a:[28,31,27,35,39,38,46,51,49,56,61,66]},
+ {t:'YDEX',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Yandex%20logo.svg',n:'Яндекс',p:'3 816,00 ₽',c:'-0,469%',d:'18,00 ₽',l:'Я',cl:'red',card:'down',up:false,a:[68,63,66,58,61,54,57,49,52,44,42,37]},
+ {t:'TATN',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Tatneft%20Logo.svg',n:'Татнефть',p:'622,7 ₽',c:'+0,793%',d:'+4,9 ₽',l:'✦',cl:'green',card:'up',up:true,a:[32,35,33,40,43,41,47,52,50,57,61,65]},
+ {t:'T',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/T-Bank%20RU%20logo.svg',n:'Т-Технологии',p:'261,82 ₽',c:'+0,715%',d:'+1,86 ₽',l:'✥',cl:'yellow',card:'up',up:true,a:[34,37,34,42,45,44,50,54,52,57,62,64]},
+ {t:'NVTK',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Novatek%20logo.svg',n:'Новатэк',p:'1 035,7 ₽',c:'+5,78%',d:'+56,6 ₽',l:'▶',cl:'blue',card:'up-dark',up:true,a:[20,24,21,28,25,38,43,50,60,72,69,78]},
+ {t:'GMKN',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Norilsk%20Nickel%20logo.svg',n:'Норникель',p:'131,98 ₽',c:'-1,90%',d:'2,56 ₽',l:'N',cl:'blue',card:'down-dark',up:false,a:[70,66,69,62,64,58,60,53,50,47,49,43]},
  {t:'PLZL',n:'Полюс',p:'983,8 ₽',c:'+0,245%',d:'+2,4 ₽',l:'✣',cl:'yellow',card:'up-light',up:true,a:[43,45,42,47,49,48,51,54,52,55,57,59]},
  {t:'VTBR',n:'ВТБ',p:'51,71 ₽',c:'+0,76%',d:'+0,39 ₽',l:'ВТБ',cl:'blue',card:'up',up:true,a:[39,40,38,43,47,45,49,53,51,55,57,60]},
  {t:'X5',n:'X5',p:'1 803,0 ₽',c:'+0,055%',d:'+1,0 ₽',l:'X5',cl:'white',card:'neutral',up:true,a:[47,48,46,50,51,50,52,53,51,54,55,56]},
- {t:'ROSN',n:'Роснефть',p:'351,70 ₽',c:'+5,65%',d:'+18,80 ₽',l:'◆',cl:'yellow',card:'up-dark',up:true,a:[22,18,25,20,32,38,35,48,44,55,51,62]},
+ {t:'ROSN',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Rosneft%20logo.svg',n:'Роснефть',p:'351,70 ₽',c:'+5,65%',d:'+18,80 ₽',l:'◆',cl:'yellow',card:'up-dark',up:true,a:[22,18,25,20,32,38,35,48,44,55,51,62]},
  {t:'SBERP',n:'Сбер пр.',p:'280,96 ₽',c:'+1,40%',d:'+3,89 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[34,36,32,41,46,44,50,55,53,62,66,71]},
  {t:'OZON',n:'Ozon',p:'2 622,5 ₽',c:'+0,153%',d:'+4,0 ₽',l:'O',cl:'blue',card:'up-light',up:true,a:[43,45,42,46,48,47,50,52,51,53,54,56]},
  {t:'SNGS',n:'Сургутнефтегаз',p:'16,600 ₽',c:'+2,95%',d:'+0,475 ₽',l:'С',cl:'blue',card:'up-dark',up:true,a:[28,30,27,33,38,36,43,48,47,52,58,63]},
@@ -281,7 +298,7 @@ function render(){
 
  document.getElementById('listView').innerHTML=list.map(s=>`
   <article class="list-row" onclick="openDetail('${s.t}')">
-    <div class="logo ${s.cl}">${s.l}</div>
+    <div class="logo img-logo ${s.cl}"><img src="${s.logoUrl||''}" alt="${s.t}" onerror="this.style.display='none';this.parentElement.textContent=s.l"></div>
     <div class="list-right"><div class="name">${s.n}</div><div class="ticker">MOEX → ${s.t}</div></div>
     ${spark(s.a,s.up)}
     <div><div class="list-price">${s.p}</div><div class="list-change ${s.up?'':'red'}">${s.c} (${s.d})</div></div>
@@ -290,7 +307,7 @@ function render(){
 
  document.getElementById('mapGrid').innerHTML=list.map(s=>`
   <article class="card ${s.card}" onclick="openDetail('${s.t}')">
-    <div class="card-head"><div class="logo ${s.cl}">${s.l}</div><div class="card-ticker">${s.t}</div></div>
+    <div class="card-head"><div class="logo img-logo ${s.cl}"><img src="${s.logoUrl||''}" alt="${s.t}" onerror="this.style.display='none';this.parentElement.textContent=s.l"></div><div class="card-ticker">${s.t}</div></div>
     <div class="card-price">${s.p}</div>
     <div class="card-change">${s.c} (${s.d})</div>
   </article>
