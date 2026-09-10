@@ -3,137 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOEX Mini Terminal</title>
+    <title>AirTrades Clone</title>
     <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a1a24; /* Тёмный стильный фон */
+            background-color: #21212b; /* Точный фон AirTrades */
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             overflow-y: auto;
         }
-
-        /* Заголовок приложения */
         .app-header {
             padding: 16px;
-            background-color: #222230;
-            border-bottom: 1px solid #2d2d3f;
+            background-color: #272733;
+            border-bottom: 1px solid #2e2e3d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             position: sticky;
             top: 0;
             z-index: 100;
         }
-
-        .app-header h1 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .app-header p {
-            margin: 4px 0 0 0;
-            font-size: 12px;
-            color: #7e7e9a;
-        }
-
-        /* Контейнер списка акций */
-        .stocks-list {
-            padding: 8px 16px;
-        }
-
-        /* Элемент списка (строка акции) */
+        .header-title-block { display: flex; flex-direction: column; }
+        .app-header h1 { margin: 0; font-size: 15px; font-weight: 500; color: #8c8c9e; }
+        .app-header .sub { font-size: 13px; color: #ffffff; font-weight: bold; margin-top: 4px; }
+        .time-filter { font-size: 13px; color: #8c8c9e; }
+        
+        .stocks-list { padding: 0 16px; }
         .stock-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 14px 0;
-            border-bottom: 1px solid #2d2d3f;
+            border-bottom: 1px solid #2d2d3c;
         }
-
-        /* Блок с логотипом и названиями */
-        .stock-main-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 35%;
-        }
-
+        .stock-main-info { display: flex; align-items: center; gap: 12px; width: 45%; }
         .stock-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: #2d2d3f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
+            width: 38px; height: 38px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: bold;
         }
+        .stock-meta { display: flex; flex-direction: column; }
+        .stock-name { font-size: 14px; font-weight: bold; }
+        .stock-ticker { font-size: 11px; color: #727284; margin-top: 3px; }
+        
+        .stock-sparkline { width: 70px; height: 28px; }
+        .stock-sparkline canvas { width: 100%; height: 100%; }
+        
+        .stock-financials { text-align: right; width: 40%; }
+        .stock-price { font-size: 15px; font-weight: bold; }
+        .stock-change { font-size: 12px; font-weight: 500; margin-top: 3px; }
+        .up { color: #2ebd85; }
+        .down { color: #f6465d; }
 
-        .stock-meta {
-            display: flex;
-            flex-direction: column;
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            background-color: #1e1e26; border-top: 1px solid #2d2d3c;
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
         }
-
-        .stock-name {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .stock-ticker {
-            font-size: 11px;
-            color: #7e7e9a;
-            margin-top: 2px;
-        }
-
-        /* Блок микро-графика (спарклайна) */
-        .stock-sparkline {
-            width: 80px;
-            height: 30px;
-        }
-
-        .stock-sparkline canvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Блок цены и процентов */
-        .stock-financials {
-            text-align: right;
-            width: 30%;
-        }
-
-        .stock-price {
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-        .stock-change {
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-
-        /* Цветовые стили */
-        .up { color: #2ebd85; }   /* Зелёный при росте */
-        .down { color: #f6465d; } /* Красный при падении */
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #616173; }
+        .nav-item.active { color: #ff3366; }
+        .nav-icon { font-size: 18px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
 
+    <!-- Шапка -->
     <div class="app-header">
-        <h1>Изменение цены</h1>
-        <p>Акции MOEX • За сегодня</p>
+        <div class="header-title-block">
+            <h1>Изменение цены</h1>
+            <div class="sub">Акции MOEX</div>
+        </div>
+        <div class="time-filter">За сегодня ⏱</div>
     </div>
 
-    <!-- Список наших акций -->
-    <div class="stocks-list">
+    <!-- Лента котировок -->
+    <div class="stocks-list" style="margin-bottom: 70px;">
         
         <!-- Газпром -->
-        <div class="stock-row">
+        <div class="stock-row" id="row-gazp">
             <div class="stock-main-info">
-                <div class="stock-avatar" style="color: #2962ff; background: rgba(41,98,255,0.1);">Г</div>
+                <div class="stock-avatar" style="color: #4385f4; background: rgba(67,133,244,0.15);">ГАЗП</div>
                 <div class="stock-meta">
                     <span class="stock-name">Газпром</span>
                     <span class="stock-ticker">MOEX → GAZP</span>
@@ -143,17 +94,17 @@
                 <canvas id="chart-gazp"></canvas>
             </div>
             <div class="stock-financials">
-                <div class="stock-price">128,45 ₽</div>
-                <div class="stock-change up">+0,85%</div>
+                <div class="stock-price" id="price-gazp">Загрузка...</div>
+                <div class="stock-change" id="change-gazp">--</div>
             </div>
         </div>
 
         <!-- Сбербанк -->
-        <div class="stock-row">
+        <div class="stock-row" id="row-sber">
             <div class="stock-main-info">
-                <div class="stock-avatar" style="color: #2ebd85; background: rgba(46,189,133,0.1);">С</div>
+                <div class="stock-avatar" style="color: #00b06c; background: rgba(0,176,108,0.15);">СБЕР</div>
                 <div class="stock-meta">
-                    <span class="stock-name">Сбербанк</span>
+                    <span class="stock-name">Сбербанк ао</span>
                     <span class="stock-ticker">MOEX → SBER</span>
                 </div>
             </div>
@@ -161,15 +112,15 @@
                 <canvas id="chart-sber"></canvas>
             </div>
             <div class="stock-financials">
-                <div class="stock-price">245,20 ₽</div>
-                <div class="stock-change up">+1,42%</div>
+                <div class="stock-price" id="price-sber">Загрузка...</div>
+                <div class="stock-change" id="change-sber">--</div>
             </div>
         </div>
 
         <!-- Роснефть -->
-        <div class="stock-row">
+        <div class="stock-row" id="row-rosn">
             <div class="stock-main-info">
-                <div class="stock-avatar" style="color: #ff9800; background: rgba(255,152,0,0.1);">Р</div>
+                <div class="stock-avatar" style="color: #ffcc00; background: rgba(255,204,0,0.15);">РОСН</div>
                 <div class="stock-meta">
                     <span class="stock-name">Роснефть</span>
                     <span class="stock-ticker">MOEX → ROSN</span>
@@ -179,74 +130,123 @@
                 <canvas id="chart-rosn"></canvas>
             </div>
             <div class="stock-financials">
-                <div class="stock-price">349,55 ₽</div>
-                <div class="stock-change down">-0,68%</div>
+                <div class="stock-price" id="price-rosn">Загрузка...</div>
+                <div class="stock-change" id="change-rosn">--</div>
             </div>
         </div>
 
     </div>
 
+    <!-- Навигация -->
+    <div class="nav-bar">
+        <div class="nav-item">
+            <div class="nav-icon">📈</div>
+            <span>Импакты</span>
+        </div>
+        <div class="nav-item active">
+            <div class="nav-icon">📊</div>
+            <span>IMOEX</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">🔄</div>
+            <span>Листинг</span>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">👤</div>
+            <span>Профиль</span>
+        </div>
+    </div>
     <script type="text/javascript">
-        // Данные для микро-графиков (тренды движения цены)
+        // Заполненные исторические массивы для красивой отрисовки графиков
         const sparklinesData = {
-            'chart-gazp': { points:, color: '#2ebd85' },
-            'chart-sber': { points:, color: '#2ebd85' },
-            'chart-rosn': { points:, color: '#f6465d' }
+            'chart-gazp': { points: [127.1, 126.5, 127.8, 127.2, 129.0, 128.45], color: '#2ebd85' },
+            'chart-sber': { points: [241.0, 243.2, 242.5, 244.1, 243.8, 245.20], color: '#2ebd85' },
+            'chart-rosn': { points: [354.2, 352.0, 353.1, 350.5, 351.4, 349.55], color: '#f6465d' }
         };
 
-        // Функция отрисовки маленьких графиков-линий
-        function drawSparkline(canvasId) {
+        // Функция отрисовки спарклайна на Canvas
+        function drawSparkline(canvasId, points, isUp) {
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
-            
             const ctx = canvas.getContext('2d');
             const dpr = window.devicePixelRatio || 1;
-            
-            // Настройка размеров холста
+
             canvas.width = canvas.offsetWidth * dpr;
             canvas.height = canvas.offsetHeight * dpr;
             ctx.scale(dpr, dpr);
 
             const width = canvas.offsetWidth;
             const height = canvas.offsetHeight;
-            const data = sparklinesData[canvasId];
-            const points = data.points;
-
-            ctx.clearRect(0, 0, width, height);
-
-            // Расчет координат точек
             const minVal = Math.min(...points);
             const maxVal = Math.max(...points);
             const stepX = width / (points.length - 1);
 
-            ctx.strokeStyle = data.color;
-            ctx.lineWidth = 2;
+            ctx.clearRect(0, 0, width, height);
+            ctx.strokeStyle = isUp ? '#2ebd85' : '#f6465d';
+            ctx.lineWidth = 1.8;
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
-            
+
             ctx.beginPath();
-            
             for (let i = 0; i < points.length; i++) {
                 const x = i * stepX;
-                // Защита от деления на ноль, если все точки равны
                 const y = maxVal === minVal ? height / 2 : height - ((points[i] - minVal) / (maxVal - minVal)) * height;
-                
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             }
             ctx.stroke();
         }
 
-        // Запуск генерации интерфейса
+        // Запрос к официальному API Московской Биржи (MOEX ISS)
+        async function loadMoexData() {
+            try {
+                const response = await fetch('https://moex.com');
+                const json = await response.json();
+                const dataRows = json.securities.data;
+
+                const tickers = { 'GAZP': 'gazp', 'SBER': 'sber', 'ROSN': 'rosn' };
+
+                dataRows.forEach(row => {
+                    const secId = row[0];
+                    const prevPrice = row[1];
+                    const lastPrice = row[2];
+
+                    if (tickers[secId] && lastPrice) {
+                        const id = tickers[secId];
+                        
+                        const changePercent = (((lastPrice - prevPrice) / prevPrice) * 100).toFixed(2);
+                        const changeValue = (lastPrice - prevPrice).toFixed(2);
+                        const isUp = changePercent >= 0;
+
+                        document.getElementById(`price-${id}`).innerText = `${lastPrice.toLocaleString('ru-RU')} ₽`;
+                        
+                        const changeEl = document.getElementById(`change-${id}`);
+                        const sign = isUp ? '+' : '';
+                        changeEl.innerText = `${sign}${changePercent}% (${sign}${changeValue} ₽)`;
+                        changeEl.className = isUp ? 'stock-change up' : 'stock-change down';
+
+                        // Формируем динамический тренд, заменяя последнюю точку на живую цену
+                        let currentTrend = [...sparklinesData[`chart-${id}`].points];
+                        currentTrend[currentTrend.length - 1] = lastPrice; 
+                        drawSparkline(`chart-${id}`, currentTrend, isUp);
+                    }
+                });
+            } catch (error) {
+                console.error("Ошибка обновления данных:", error);
+                // Запуск дефолтных графиков при сбое сети
+                Object.keys(sparklinesData).forEach(id => {
+                    const compId = id.split('-')[1];
+                    drawSparkline(id, sparklinesData[id].points, compId !== 'rosn');
+                });
+            }
+        }
+
         window.onload = () => {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
             
-            // Отрисовываем каждый микро-график
-            Object.keys(sparklinesData).forEach(id => drawSparkline(id));
+            loadMoexData();
+            setInterval(loadMoexData, 15000); // Авто-обновление каждые 15 секунд
         };
     </script>
 </body>
