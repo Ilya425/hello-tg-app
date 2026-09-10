@@ -21,12 +21,12 @@ button{border:0;background:none;color:inherit}
 .header-space{height:0}
 
 .filter{
-  height:88px;background:var(--panel2);display:flex;align-items:center;
-  justify-content:space-between;padding:14px 24px;
+  height:82px;background:var(--panel2);display:flex;align-items:center;
+  justify-content:space-between;padding:12px 22px;
   box-shadow:0 5px 14px rgba(0,0,0,.25)
 }
-.filter-title{font-size:20px;line-height:1.1}
-.filter-sub{font-size:14px;color:#bdbdc3;margin-top:9px}
+.filter-title{font-size:19px;line-height:1.1}
+.filter-sub{font-size:13px;color:#bdbdc3;margin-top:9px}
 .arrow{color:#61d97a;font-size:18px;margin-left:18px}
 .clock{font-size:29px;opacity:.95;cursor:pointer}
 
@@ -34,6 +34,27 @@ button{border:0;background:none;color:inherit}
 .search.show{display:flex}
 .search input{flex:1;background:none;border:0;outline:0;color:#fff}
 .search input::placeholder{color:#aaa}
+
+
+.index-block{
+  min-width:118px;
+  text-align:right;
+  padding-top:2px;
+}
+.index-value{
+  font-size:22px;
+  line-height:1.05;
+  font-weight:600;
+}
+.index-value.up-index{color:var(--green)}
+.index-value.down-index{color:var(--red)}
+.index-label{
+  margin-top:6px;
+  color:#bdbdc3;
+  font-size:14px;
+  line-height:1;
+  white-space:nowrap;
+}
 
 /* LIST */
 .list-row{
@@ -144,14 +165,60 @@ button{border:0;background:none;color:inherit}
 
 /* SUBMENU */
 .subnav{
-  position:fixed;left:50%;bottom:86px;transform:translateX(-50%);
-  width:100%;max-width:520px;height:64px;display:grid;grid-template-columns:1fr 1fr;
-  background:#414147;border:1px solid #505058;border-radius:7px 7px 0 0;z-index:30
+  position:fixed;
+  left:50%;
+  bottom:86px;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:520px;
+  height:60px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  background:#414147;
+  border:1px solid #505058;
+  border-radius:7px 7px 0 0;
+  z-index:30;
+  overflow:hidden;
 }
-.subbtn{position:relative;font-size:17px;font-weight:600;color:#c4c4c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-.subbtn .miniico{font-size:34px;line-height:.65}.subbtn.active{color:var(--pink)}
-.subbtn.active::after{content:"";height:3px;background:var(--pink);left:0;right:0;bottom:0;position:absolute}
-.subbtn .listico{font-size:33px;letter-spacing:-7px;padding-right:7px}
+.subbtn{
+  position:relative;
+  width:100%;
+  height:100%;
+  padding:5px 0 6px;
+  font-size:16px;
+  font-weight:600;
+  color:#c4c4c8;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  line-height:1;
+}
+.subbtn .miniico,
+.subbtn .listico{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:25px;
+  font-size:23px;
+  line-height:1;
+}
+.subbtn .listico{
+  letter-spacing:-4px;
+  padding:0;
+}
+.subbtn.active{color:var(--pink)}
+.subbtn.active::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:3px;
+  background:var(--pink);
+}
 
 /* FOOTER */
 .bottom{
@@ -160,9 +227,17 @@ button{border:0;background:none;color:inherit}
   padding-bottom:max(5px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr)
 }
 .nav{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;padding-bottom:7px;color:#bcbcc1}
-.nav .ico{font-size:25px;line-height:1;height:31px;display:flex;align-items:center}
+.nav .ico{font-size:29px;line-height:1;height:32px;display:flex;align-items:center;justify-content:center}
+.listing-icon{font-size:24px !important;letter-spacing:-3px;transform:scaleX(1.08)}
 .nav span{font-size:15px;line-height:18px;height:18px;white-space:nowrap}.nav.active{color:var(--teal)}
-.badge{width:46px;height:46px;border-radius:50%;background:#f2f2f4;color:#159d36;display:grid;place-items:center;font-size:14px;margin:0 0 6px;align-self:center}
+.market-symbol{
+  width:46px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:27px;line-height:1;
+  color:var(--teal);
+  margin:0 0 6px;
+  align-self:center;
+}
 
 /* DETAIL */
 .detail{display:none;min-height:100vh;background:var(--bg)}
@@ -201,13 +276,14 @@ button{border:0;background:none;color:inherit}
   .card-ticker{font-size:18px}
   .card-price{font-size:19px}
   .card-change{font-size:13px}
-  .subnav{height:60px}
-  .subbtn{font-size:15px}
-  .subbtn .miniico,.subbtn .listico{font-size:22px}
+  .subnav{height:58px}
+  .subbtn{font-size:15px;padding-top:4px;padding-bottom:6px;gap:3px}
+  .subbtn .miniico,.subbtn .listico{font-size:21px;height:24px}
   .bottom{height:86px}
   .nav span{font-size:14px}
-  .nav .ico{font-size:24px;height:30px}
-  .badge{width:44px;height:44px;font-size:13px;margin-bottom:6px}
+  .nav .ico{font-size:27px;height:32px}
+  .listing-icon{font-size:22px !important}
+  .market-symbol{width:44px;height:32px;font-size:25px;margin-bottom:6px}
 }
 </style>
 </head>
@@ -219,7 +295,10 @@ button{border:0;background:none;color:inherit}
       <div class="filter-title">Изменение цены <span class="arrow">▼</span></div>
       <div class="filter-sub">Акции МОEX</div>
     </div>
-    <button class="clock" onclick="toggleSearch()" aria-label="Поиск">◷</button>
+    <div class="index-block">
+      <div class="index-value up-index" id="moexValue">2286</div>
+      <div class="index-label">Индекс МОЕХ</div>
+    </div>
   </div>
 
   <div class="search" id="searchBox">
@@ -255,8 +334,8 @@ button{border:0;background:none;color:inherit}
 
 <nav class="bottom">
   <button class="nav" onclick="tab('Импульсы')"><div class="ico">✣</div><span>Импульсы</span></button>
-  <button class="nav active"><div class="badge">2286</div><span>IMOEX</span></button>
-  <button class="nav" onclick="tab('Листинг')"><div class="ico">⌁</div><span>Листинг</span></button>
+  <button class="nav active"><div class="market-symbol">◆</div><span>IMOEX</span></button>
+  <button class="nav" onclick="tab('Листинг')"><div class="ico listing-icon">▂▅▇</div><span>Листинг</span></button>
   <button class="nav" onclick="tab('Поток')"><div class="ico">◉</div><span>Поток</span></button>
   <button class="nav" onclick="tab('Профиль')"><div class="ico">⚙</div><span>Профиль</span></button>
 </nav>
@@ -264,6 +343,9 @@ button{border:0;background:none;color:inherit}
 <script>
 const tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
+
+let moexIndex=2286;
+const moexIndexChange=+0.74;
 
 const stocks=[
  {t:'LKOH',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/LUK%20OIL%20Logo.svg',n:'ЛУКОЙЛ',p:'5 295,5 ₽',c:'+1,93%',d:'+100,5 ₽',l:'Л',cl:'red',card:'up-dark',up:true,a:[30,34,31,39,43,41,48,53,50,58,61,67]},
@@ -370,6 +452,9 @@ function setAlert(){tg?.showAlert?.('Уведомления подключим �
 function tab(name){tg?.showAlert?.(name+' — следующий экран MVP.')}
 
 render();
+document.getElementById('moexValue').textContent=moexIndex.toLocaleString('ru-RU');
+document.getElementById('moexValue').classList.toggle('up-index',moexIndexChange>=0);
+document.getElementById('moexValue').classList.toggle('down-index',moexIndexChange<0);
 </script>
 </body>
 </html>
