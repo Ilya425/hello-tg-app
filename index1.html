@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed the Cat Game</title>
+    <script src="//telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #e3f2fd; /* Голубой фон водяного мира */
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            font-family: sans-serif;
+            text-align: center;
+        }
+
+        /* Текст со счетом / результатом */
+        #status-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1565c0;
+            margin-top: 20px;
+        }
+
+        /* Кот сверху по центру */
+        #cat {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 80px;
+            line-height: 1;
+            user-select: none;
+            transition: transform 0.1s ease;
+        }
+
+        /* Миска по центру */
+        #bowl {
+            position: absolute;
+            top: 45vh;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 60px;
+            line-height: 1;
+            user-select: none;
+        }
+
+        /* Рыбка, которая плавает снизу */
+        #fish {
+            position: absolute;
+            top: 55vh;
+            left: 0px;
+            font-size: 55px;
+            line-height: 1;
+            user-select: none;
+        }
+
+        /* Кнопка */
+        .button-container {
+            position: absolute;
+            bottom: 50px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #control-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        #control-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="status-text">Поймай рыбку над миской!</div>
+    
+    <div id="cat">🐱</div>
+    <div id="bowl">🥣</div>
+    <div id="fish">🐟</div>
+
+    <div class="button-container">
+        <button id="control-btn" onclick="pressButton()">ЛОВИ!</button>
+    </div>
+
+    <script>
+        window.Telegram.WebApp.ready();
+
+        const cat = document.getElementById('cat');
+        const bowl = document.getElementById('bowl');
+        const fish = document.getElementById('fish');
+        const btn = document.getElementById('control-btn');
+        const statusText = document.getElementById('status-text');
+        
+        let fishX = 0;
+        let speed = 7; // Скорость рыбки (можно усложнить игру, увеличив её)
+        let direction = 1;
+        let isPlaying = true;
+
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            const screenWidth = window.innerWidth;
+            const fishWidth = fish.offsetWidth;
+
+            // Двигаем рыбку
+            fishX += speed * direction;
+
+            // Развороты рыбки у краев экрана
+            if (fishX + fishWidth >= screenWidth && direction === 1) {
+                direction = -1;
+                fish.style.transform = 'scaleX(-1)'; 
+            }
+            else if (fishX <= 0 && direction === -1) {
+                direction = 1;
+                fish.style.transform = 'scaleX(1)';  
+            }
+            fish.style.left = fishX + 'px';
+
+            // ЭФФЕКТ: Кот следит глазами (слегка наклоняется в сторону рыбки)
+            const midPoint = screenWidth / 2;
+            if (fishX < midPoint - 50) {
+                cat.style.transform = 'translateX(-50%) rotate(-10deg)'; // Смотрит влево
+            } else if (fishX > midPoint + 50) {
+                cat.style.transform = 'translateX(-50%) rotate(10deg)';  // Смотрит вправо
+            } else {
+                cat.style.transform = 'translateX(-50%) rotate(0deg)';   // Смотрит прямо
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function pressButton() {
+            if (isPlaying) {
+                // Игрок нажал "ЛОВИ" — останавливаем рыбку
+                isPlaying = false;
+
+                // Получаем координаты центра миски и центра рыбки
+                const bowlRect = bowl.getBoundingClientRect();
+                const fishRect = fish.getBoundingClientRect();
+                
+                const bowlCenter = bowlRect.left + (bowlRect.width / 2);
+                const fishCenter = fishRect.left + (fishRect.width / 2);
+
+                // Допустимая погрешность попадания в пикселях (чем меньше число, тем сложнее)
+                const accuracy = 40; 
+
+                if (Math.abs(fishCenter - bowlCenter) <= accuracy) {
+                    // ПОБЕДА! Рыбка попала в миску
+                    cat.innerText = "😸"; // Кот доволен
+                    statusText.innerText = "УРА! Кот накормлен! 🎉";
+                    statusText.style.color = "#4caf50";
+                } else {
+                    // ПРОИГРЫШ! Мимо миски
+                    cat.innerText = "😿"; // Кот грустит
+                    statusText.innerText = "Мимо! Кот остался голодным 💔";
+                    statusText.style.color = "#f44336";
+                }
+
+                btn.innerText = "ИГРАТЬ СНОВА";
+                btn.style.backgroundColor = "#2196f3";
+            } else {
+                // Сброс игры для нового раунда
+                isPlaying = true;
+                cat.innerText = "🐱";
+                statusText.innerText = "Поймай рыбку над миской!";
+                statusText.style.color = "#1565c0";
+                btn.innerText = "ЛОВИ!";
+                btn.style.backgroundColor = "#ff9800";
+                fishX = Math.random() * (window.innerWidth - 60); // Случайный старт
+                gameLoop();
+            }
+        }
+
+        window.onload = () => {
+            gameLoop();
+        };
+    </script>
+</body>
+</html>
