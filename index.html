@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOEX Stock Tracker</title>
+    <title>MOEX Local Charts</title>
     <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #131722;
+            background-color: #131722; /* Тёмная тема биржи */
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             height: 100vh;
@@ -18,7 +18,7 @@
             overflow: hidden;
         }
 
-        /* Горизонтальная лента со скроллом */
+        /* Шапка-скролл для выбора компаний */
         .tabs-scroll-container {
             display: flex;
             gap: 8px;
@@ -27,7 +27,6 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             z-index: 10;
             overflow-x: auto;
-            white-space: nowrap;
         }
 
         .tabs-scroll-container::-webkit-scrollbar {
@@ -53,91 +52,53 @@
             box-shadow: 0 0 8px rgba(41, 98, 255, 0.5);
         }
 
-        /* Главный информационный блок акции */
-        .stock-dashboard {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .stock-card {
+        /* Инфо-блок выбранной акции */
+        .stock-info {
+            padding: 15px 20px;
             background-color: #1c2030;
-            border-radius: 16px;
-            padding: 30px;
-            width: 85%;
-            max-width: 320px;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-            border: 1px solid #2a2e39;
+            border-bottom: 1px solid #2a2e39;
         }
 
-        .stock-ticker {
-            font-size: 14px;
-            color: #848e9c;
-            text-transform: uppercase;
+        .stock-title {
+            font-size: 20px;
             font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-
-        .stock-name {
-            font-size: 26px;
-            font-weight: bold;
-            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .stock-price {
-            font-size: 42px;
+            font-size: 24px;
             font-weight: bold;
-            margin-bottom: 10px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* Классы для красивой подсветки изменения цены */
-        .stock-change {
-            font-size: 18px;
-            font-weight: bold;
-            padding: 6px 12px;
-            border-radius: 8px;
-            display: inline-block;
-        }
-
-        .positive {
-            background-color: rgba(14, 203, 129, 0.15);
+            margin-top: 5px;
             color: #0ecb81;
         }
 
-        .negative {
-            background-color: rgba(246, 70, 93, 0.15);
-            color: #f6465d;
-        }
-
-        /* Нижний блок */
-        .footer-info {
-            padding: 20px;
-            background-color: #1c2030;
-            border-top: 1px solid #2a2e39;
-            text-align: center;
-        }
-
-        .refresh-btn {
-            background-color: #2a2e39;
-            color: #ffffff;
-            border: 1px solid #474d57;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
+        /* Зона графика (70% экрана) */
+        .chart-section {
+            height: 60vh;
             width: 100%;
-            max-width: 200px;
+            position: relative;
+            padding: 10px 0;
+            box-sizing: border-box;
+            background-color: #131722;
         }
 
-        .refresh-btn:active {
-            background-color: #353a46;
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .footer-info {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1c2030;
+            padding: 10px;
+            border-top: 1px solid #2a2e39;
+            font-size: 13px;
+            color: #848e9c;
         }
     </style>
 </head>
@@ -145,84 +106,135 @@
 
     <!-- Меню выбора со скроллом -->
     <div class="tabs-scroll-container">
-        <button class="tab-button active" onclick="updateDashboard('gazp', this)">Газпром</button>
-        <button class="tab-button" onclick="updateDashboard('sber', this)">Сбербанк</button>
-        <button class="tab-button" onclick="updateDashboard('rosn', this)">Роснефть</button>
-        <button class="tab-button" onclick="updateDashboard('lkoh', this)">Лукойл</button>
+        <button class="tab-button active" onclick="selectStock('gazp', this)">Газпром</button>
+        <button class="tab-button" onclick="selectStock('sber', this)">Сбербанк</button>
+        <button class="tab-button" onclick="selectStock('rosn', this)">Роснефть</button>
     </div>
 
-    <!-- Область котировок (отрисуется встроенными средствами HTML) -->
-    <div class="stock-dashboard">
-        <div class="stock-card">
-            <div id="ticker-label" class="stock-ticker">GAZP</div>
-            <div id="name-label" class="stock-name">ПАО «Газпром»</div>
-            <div id="price-label" class="stock-price">124.50 ₽</div>
-            <div id="change-label" class="stock-change positive">+1.42%</div>
-        </div>
+    <!-- Инфо-панель -->
+    <div class="stock-info">
+        <div id="stock-name" class="stock-title">ПАО «Газпром»</div>
+        <div id="stock-price" class="stock-price">128.45 ₽</div>
     </div>
 
-    <!-- Нижняя кнопка обновления данных -->
+    <!-- Наш собственный независимый график -->
+    <div class="chart-section">
+        <canvas id="localChart"></canvas>
+    </div>
+
     <div class="footer-info">
-        <button class="refresh-btn" onclick="simulateRefresh()">Обновить котировки</button>
+        <p>📊 Визуальный график построен локально и защищен от блокировок Telegram</p>
     </div>
 
     <script type="text/javascript">
-        // Локальная база актуальных котировок, которая не зависит от внешних сайтов
-        const stockData = {
-            gazp: { ticker: "GAZP", name: "ПАО «Газпром»", price: "128.45 ₽", change: "+0.85%", isPositive: true },
-            sber: { ticker: "SBER", name: "Сбербанк России", price: "245.20 ₽", change: "-1.12%", isPositive: false },
-            rosn: { ticker: "ROSN", name: "ПАО «Роснефть»", price: "482.10 ₽", change: "+2.41%", isPositive: true },
-            lkoh: { ticker: "LKOH", name: "ПАО «ЛУКОЙЛ»", price: "6915.00 ₽", change: "-0.34%", isPositive: false }
+        // Точки графиков (имитируем реальные свечи/тренды Мосбиржи)
+        const chartData = {
+            gazp: { name: "ПАО «Газпром»", price: "128.45 ₽", color: "#2962ff", points: [135, 132, 130, 126, 129, 125, 127, 124, 126, 128.45] },
+            sber: { name: "Сбербанк России", price: "245.20 ₽", color: "#0ecb81", points: [230, 232, 235, 239, 237, 241, 240, 243, 242, 245.20] },
+            rosn: { name: "ПАО «Роснефть»", price: "482.10 ₽", color: "#ff9800", points: [460, 465, 462, 470, 475, 471, 478, 485, 480, 482.10] }
         };
 
-        let currentCompany = 'gazp';
+        let currentId = 'gazp';
 
-        // Функция обновления экрана при нажатии на кнопки скролл-бара
-        function updateDashboard(id, buttonElement) {
-            currentCompany = id;
+        function drawChart() {
+            const canvas = document.getElementById('localChart');
+            const ctx = canvas.getContext('2d');
             
-            // Смена активной кнопки
-            const buttons = document.querySelectorAll('.tab-button');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            if(buttonElement) buttonElement.classList.add('active');
+            // Адаптируем разрешение холста под размер экрана мобильного
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
 
-            const data = stockData[id];
-            
-            document.getElementById('ticker-label').innerText = data.ticker;
-            document.getElementById('name-label').innerText = data.name;
-            document.getElementById('price-label').innerText = data.price;
-            
-            const changeLabel = document.getElementById('change-label');
-            changeLabel.innerText = data.change;
-            
-            // Меняем цвет процентов (зелёный или красный)
-            if(data.isPositive) {
-                changeLabel.className = "stock-change positive";
-            } else {
-                changeLabel.className = "stock-change negative";
+            const width = rect.width;
+            const height = rect.height;
+            const data = chartData[currentId];
+            const points = data.points;
+
+            // Очищаем холст перед перерисовкой
+            ctx.clearRect(0, 0, width, height);
+
+            // Рисуем фоновую сетку трейдера
+            ctx.strokeStyle = '#2a2e39';
+            ctx.lineWidth = 0.5;
+            for (let i = 1; i < 5; i++) {
+                let y = (height / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
             }
+
+            // Вычисляем координаты для линии тренда
+            const minVal = Math.min(...points) * 0.98;
+            const maxVal = Math.max(...points) * 1.02;
+            const stepX = width / (points.length - 1);
+
+            function getX(index) { return index * stepX; }
+            function getY(val) { return height - ((val - minVal) / (maxVal - minVal)) * height; }
+
+            // 1. Рисуем красивый градиент-заливку под графиком
+            let gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, data.color + '40'); // Полупрозрачный цвет
+            gradient.addColorStop(1, data.color + '00'); // Уходит в ноль
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(getX(0), height);
+            for (let i = 0; i < points.length; i++) {
+                ctx.lineTo(getX(i), getY(points[i]));
+            }
+            ctx.lineTo(getX(points.length - 1), height);
+            ctx.closePath();
+            ctx.fill();
+
+            // 2. Рисуем саму линию графика
+            ctx.strokeStyle = data.color;
+            ctx.lineWidth = 3;
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(getX(0), getY(points[0]));
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(getX(i), getY(points[i]));
+            }
+            ctx.stroke();
+
+            // 3. Рисуем финальную мигающую точку на конце графика
+            const lastIdx = points.length - 1;
+            ctx.fillStyle = data.color;
+            ctx.beginPath();
+            ctx.arc(getX(lastIdx) - 5, getY(points[lastIdx]), 6, 0, 2 * Math.PI);
+            ctx.fill();
         }
 
-        // Анимация при нажатии на нижнюю кнопку "Обновить"
-        function simulateRefresh() {
-            const priceLabel = document.getElementById('price-label');
-            priceLabel.style.opacity = 0.5;
+        // Переключение вкладок компаний
+        function selectStock(id, buttonElement) {
+            currentId = id;
             
-            setTimeout(() => {
-                priceLabel.style.opacity = 1;
-                // Небольшая симуляция изменения цены "в реальном времени"
-                let currentPrice = parseFloat(stockData[currentCompany].price);
-                let randomDelta = (Math.random() * 0.4 - 0.2).toFixed(2);
-                let newPrice = (currentPrice + parseFloat(randomDelta)).toFixed(2);
-                priceLabel.innerText = newPrice + " ₽";
-            }, 300);
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+
+            // Обновляем текстовые данные
+            document.getElementById('stock-name').innerText = chartData[id].name;
+            document.getElementById('stock-price').innerText = chartData[id].price;
+            
+            // Подсвечиваем цену цветом компании
+            document.getElementById('stock-price').style.color = chartData[id].color;
+
+            // Перерисовываем график под новые данные
+            drawChart();
         }
 
         window.onload = () => {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
-            updateDashboard('gazp', null); // Первичная загрузка Газпрома
+            drawChart(); // Отрисовка первого графика при старте
         };
+
+        // Перерисовываем график, если пользователь перевернул экран смартфона
+        window.onresize = drawChart;
     </script>
 </body>
 </html>
