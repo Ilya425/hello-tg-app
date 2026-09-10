@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Running Cat Mini App</title>
-    <!-- ИСПРАВЛЕНО: Полная и правильная ссылка на скрипт Telegram -->
-    <script src="https://telegram.org"></script>
+    <!-- Подключаем скрипт без протокола, так он точно не обрежется -->
+    <script src="//telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             margin: 0;
@@ -16,27 +16,29 @@
             position: relative;
         }
 
+        /* Наш котик теперь — это текстовый эмодзи огромного размера */
         #cat {
             position: absolute;
             top: 45vh;
             left: 0px;
-            width: 100px;
-            height: auto;
+            font-size: 70px; /* Размер котика */
+            line-height: 1;
+            user-select: none;
             transition: transform 0.1s linear;
         }
     </style>
 </head>
 <body>
 
-    <!-- ИСПРАВЛЕНО: Прямая и рабочая ссылка на GIF-анимацию бегущего котика -->
-    <img id="cat" src="https://postimg.cc" alt="Running Cat">
+    <!-- Наш пиксельный котик прямо в коде! -->
+    <div id="cat">🐈</div>
 
     <script>
         window.Telegram.WebApp.ready();
 
         const cat = document.getElementById('cat');
         let posX = 0;
-        let speed = 4;       // Скорость бега (можно увеличить)
+        let speed = 5; // Скорость бега котика
         let direction = 1;
 
         function animateCat() {
@@ -47,11 +49,11 @@
 
             if (posX + catWidth >= screenWidth && direction === 1) {
                 direction = -1;
-                cat.style.transform = 'scaleX(-1)'; 
+                cat.style.transform = 'scaleX(-1)'; // Разворот влево
             }
             else if (posX <= 0 && direction === -1) {
                 direction = 1;
-                cat.style.transform = 'scaleX(1)';
+                cat.style.transform = 'scaleX(1)';  // Разворот вправо
             }
 
             cat.style.left = posX + 'px';
