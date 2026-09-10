@@ -3,238 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOEX Local Charts</title>
+    <title>MOEX Mini Terminal</title>
     <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #131722; /* Тёмная тема биржи */
+            background-color: #1a1a24; /* Тёмный стильный фон */
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            overflow-y: auto;
         }
 
-        /* Шапка-скролл для выбора компаний */
-        .tabs-scroll-container {
-            display: flex;
-            gap: 8px;
-            background-color: #1c2030;
-            padding: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            z-index: 10;
-            overflow-x: auto;
+        /* Заголовок приложения */
+        .app-header {
+            padding: 16px;
+            background-color: #222230;
+            border-bottom: 1px solid #2d2d3f;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .tabs-scroll-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        .tab-button {
-            background-color: #2a2e39;
-            color: #b2b5be;
-            border: none;
-            padding: 10px 24px;
-            font-size: 14px;
+        .app-header h1 {
+            margin: 0;
+            font-size: 18px;
             font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
         }
 
-        .tab-button.active {
-            background-color: #2962ff;
-            color: #ffffff;
-            box-shadow: 0 0 8px rgba(41, 98, 255, 0.5);
+        .app-header p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: #7e7e9a;
         }
 
-        /* Инфо-блок выбранной акции */
-        .stock-info {
-            padding: 15px 20px;
-            background-color: #1c2030;
-            border-bottom: 1px solid #2a2e39;
+        /* Контейнер списка акций */
+        .stocks-list {
+            padding: 8px 16px;
         }
 
-        .stock-title {
-            font-size: 20px;
-            font-weight: bold;
+        /* Элемент списка (строка акции) */
+        .stock-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #2d2d3f;
         }
 
-        .stock-price {
-            font-size: 24px;
+        /* Блок с логотипом и названиями */
+        .stock-main-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 35%;
+        }
+
+        .stock-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #2d2d3f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
             font-weight: bold;
-            margin-top: 5px;
-            color: #0ecb81;
         }
 
-        /* Зона графика (70% экрана) */
-        .chart-section {
-            height: 60vh;
-            width: 100%;
-            position: relative;
-            padding: 10px 0;
-            box-sizing: border-box;
-            background-color: #131722;
+        .stock-meta {
+            display: flex;
+            flex-direction: column;
         }
 
-        canvas {
+        .stock-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .stock-ticker {
+            font-size: 11px;
+            color: #7e7e9a;
+            margin-top: 2px;
+        }
+
+        /* Блок микро-графика (спарклайна) */
+        .stock-sparkline {
+            width: 80px;
+            height: 30px;
+        }
+
+        .stock-sparkline canvas {
             width: 100%;
             height: 100%;
         }
 
-        .footer-info {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #1c2030;
-            padding: 10px;
-            border-top: 1px solid #2a2e39;
-            font-size: 13px;
-            color: #848e9c;
+        /* Блок цены и процентов */
+        .stock-financials {
+            text-align: right;
+            width: 30%;
         }
+
+        .stock-price {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .stock-change {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Цветовые стили */
+        .up { color: #2ebd85; }   /* Зелёный при росте */
+        .down { color: #f6465d; } /* Красный при падении */
     </style>
 </head>
 <body>
 
-    <!-- Меню выбора со скроллом -->
-    <div class="tabs-scroll-container">
-        <button class="tab-button active" onclick="selectStock('gazp', this)">Газпром</button>
-        <button class="tab-button" onclick="selectStock('sber', this)">Сбербанк</button>
-        <button class="tab-button" onclick="selectStock('rosn', this)">Роснефть</button>
+    <div class="app-header">
+        <h1>Изменение цены</h1>
+        <p>Акции MOEX • За сегодня</p>
     </div>
 
-    <!-- Инфо-панель -->
-    <div class="stock-info">
-        <div id="stock-name" class="stock-title">ПАО «Газпром»</div>
-        <div id="stock-price" class="stock-price">128.45 ₽</div>
-    </div>
+    <!-- Список наших акций -->
+    <div class="stocks-list">
+        
+        <!-- Газпром -->
+        <div class="stock-row">
+            <div class="stock-main-info">
+                <div class="stock-avatar" style="color: #2962ff; background: rgba(41,98,255,0.1);">Г</div>
+                <div class="stock-meta">
+                    <span class="stock-name">Газпром</span>
+                    <span class="stock-ticker">MOEX → GAZP</span>
+                </div>
+            </div>
+            <div class="stock-sparkline">
+                <canvas id="chart-gazp"></canvas>
+            </div>
+            <div class="stock-financials">
+                <div class="stock-price">128,45 ₽</div>
+                <div class="stock-change up">+0,85%</div>
+            </div>
+        </div>
 
-    <!-- Наш собственный независимый график -->
-    <div class="chart-section">
-        <canvas id="localChart"></canvas>
-    </div>
+        <!-- Сбербанк -->
+        <div class="stock-row">
+            <div class="stock-main-info">
+                <div class="stock-avatar" style="color: #2ebd85; background: rgba(46,189,133,0.1);">С</div>
+                <div class="stock-meta">
+                    <span class="stock-name">Сбербанк</span>
+                    <span class="stock-ticker">MOEX → SBER</span>
+                </div>
+            </div>
+            <div class="stock-sparkline">
+                <canvas id="chart-sber"></canvas>
+            </div>
+            <div class="stock-financials">
+                <div class="stock-price">245,20 ₽</div>
+                <div class="stock-change up">+1,42%</div>
+            </div>
+        </div>
 
-    <div class="footer-info">
-        <p>📊 Визуальный график построен локально и защищен от блокировок Telegram</p>
+        <!-- Роснефть -->
+        <div class="stock-row">
+            <div class="stock-main-info">
+                <div class="stock-avatar" style="color: #ff9800; background: rgba(255,152,0,0.1);">Р</div>
+                <div class="stock-meta">
+                    <span class="stock-name">Роснефть</span>
+                    <span class="stock-ticker">MOEX → ROSN</span>
+                </div>
+            </div>
+            <div class="stock-sparkline">
+                <canvas id="chart-rosn"></canvas>
+            </div>
+            <div class="stock-financials">
+                <div class="stock-price">349,55 ₽</div>
+                <div class="stock-change down">-0,68%</div>
+            </div>
+        </div>
+
     </div>
 
     <script type="text/javascript">
-        // Точки графиков (имитируем реальные свечи/тренды Мосбиржи)
-        const chartData = {
-            gazp: { name: "ПАО «Газпром»", price: "128.45 ₽", color: "#2962ff", points: [135, 132, 130, 126, 129, 125, 127, 124, 126, 128.45] },
-            sber: { name: "Сбербанк России", price: "245.20 ₽", color: "#0ecb81", points: [230, 232, 235, 239, 237, 241, 240, 243, 242, 245.20] },
-            rosn: { name: "ПАО «Роснефть»", price: "482.10 ₽", color: "#ff9800", points: [460, 465, 462, 470, 475, 471, 478, 485, 480, 482.10] }
+        // Данные для микро-графиков (тренды движения цены)
+        const sparklinesData = {
+            'chart-gazp': { points:, color: '#2ebd85' },
+            'chart-sber': { points:, color: '#2ebd85' },
+            'chart-rosn': { points:, color: '#f6465d' }
         };
 
-        let currentId = 'gazp';
-
-        function drawChart() {
-            const canvas = document.getElementById('localChart');
-            const ctx = canvas.getContext('2d');
+        // Функция отрисовки маленьких графиков-линий
+        function drawSparkline(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
             
-            // Адаптируем разрешение холста под размер экрана мобильного
+            const ctx = canvas.getContext('2d');
             const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
+            
+            // Настройка размеров холста
+            canvas.width = canvas.offsetWidth * dpr;
+            canvas.height = canvas.offsetHeight * dpr;
             ctx.scale(dpr, dpr);
 
-            const width = rect.width;
-            const height = rect.height;
-            const data = chartData[currentId];
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            const data = sparklinesData[canvasId];
             const points = data.points;
 
-            // Очищаем холст перед перерисовкой
             ctx.clearRect(0, 0, width, height);
 
-            // Рисуем фоновую сетку трейдера
-            ctx.strokeStyle = '#2a2e39';
-            ctx.lineWidth = 0.5;
-            for (let i = 1; i < 5; i++) {
-                let y = (height / 5) * i;
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-                ctx.stroke();
-            }
-
-            // Вычисляем координаты для линии тренда
-            const minVal = Math.min(...points) * 0.98;
-            const maxVal = Math.max(...points) * 1.02;
+            // Расчет координат точек
+            const minVal = Math.min(...points);
+            const maxVal = Math.max(...points);
             const stepX = width / (points.length - 1);
 
-            function getX(index) { return index * stepX; }
-            function getY(val) { return height - ((val - minVal) / (maxVal - minVal)) * height; }
-
-            // 1. Рисуем красивый градиент-заливку под графиком
-            let gradient = ctx.createLinearGradient(0, 0, 0, height);
-            gradient.addColorStop(0, data.color + '40'); // Полупрозрачный цвет
-            gradient.addColorStop(1, data.color + '00'); // Уходит в ноль
-
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.moveTo(getX(0), height);
-            for (let i = 0; i < points.length; i++) {
-                ctx.lineTo(getX(i), getY(points[i]));
-            }
-            ctx.lineTo(getX(points.length - 1), height);
-            ctx.closePath();
-            ctx.fill();
-
-            // 2. Рисуем саму линию графика
             ctx.strokeStyle = data.color;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 2;
             ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            
             ctx.beginPath();
-            ctx.moveTo(getX(0), getY(points[0]));
-            for (let i = 1; i < points.length; i++) {
-                ctx.lineTo(getX(i), getY(points[i]));
+            
+            for (let i = 0; i < points.length; i++) {
+                const x = i * stepX;
+                // Защита от деления на ноль, если все точки равны
+                const y = maxVal === minVal ? height / 2 : height - ((points[i] - minVal) / (maxVal - minVal)) * height;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
             }
             ctx.stroke();
-
-            // 3. Рисуем финальную мигающую точку на конце графика
-            const lastIdx = points.length - 1;
-            ctx.fillStyle = data.color;
-            ctx.beginPath();
-            ctx.arc(getX(lastIdx) - 5, getY(points[lastIdx]), 6, 0, 2 * Math.PI);
-            ctx.fill();
         }
 
-        // Переключение вкладок компаний
-        function selectStock(id, buttonElement) {
-            currentId = id;
-            
-            const buttons = document.querySelectorAll('.tab-button');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            buttonElement.classList.add('active');
-
-            // Обновляем текстовые данные
-            document.getElementById('stock-name').innerText = chartData[id].name;
-            document.getElementById('stock-price').innerText = chartData[id].price;
-            
-            // Подсвечиваем цену цветом компании
-            document.getElementById('stock-price').style.color = chartData[id].color;
-
-            // Перерисовываем график под новые данные
-            drawChart();
-        }
-
+        // Запуск генерации интерфейса
         window.onload = () => {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
-            drawChart(); // Отрисовка первого графика при старте
+            
+            // Отрисовываем каждый микро-график
+            Object.keys(sparklinesData).forEach(id => drawSparkline(id));
         };
-
-        // Перерисовываем график, если пользователь перевернул экран смартфона
-        window.onresize = drawChart;
     </script>
 </body>
 </html>
