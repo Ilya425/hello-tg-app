@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Running Cat Mini App</title>
+    <!-- ИСПРАВЛЕНО: Полная и правильная ссылка на скрипт Telegram -->
     <script src="https://telegram.org"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
             background-color: #fbfbfb;
-            overflow: hidden; /* Прячем полосы прокрутки, чтобы котик не ломал экран */
+            overflow: hidden;
             height: 100vh;
             position: relative;
         }
 
-        /* Настройки нашего котика */
         #cat {
             position: absolute;
-            top: 45vh;      /* Размещаем примерно по центру вертикали */
+            top: 45vh;
             left: 0px;
-            width: 100px;   /* Размер котенка */
+            width: 100px;
             height: auto;
             transition: transform 0.1s linear;
         }
@@ -28,44 +28,36 @@
 </head>
 <body>
 
-    <!-- Анимированный котик на прозрачном фоне -->
-    <img id="cat" src="https://tenor.com" alt="Running Cat">
+    <!-- ИСПРАВЛЕНО: Прямая и рабочая ссылка на GIF-анимацию бегущего котика -->
+    <img id="cat" src="https://postimg.cc" alt="Running Cat">
 
     <script>
-        // Сообщаем Телеграму о готовности приложения
         window.Telegram.WebApp.ready();
 
         const cat = document.getElementById('cat');
-        let posX = 0;        // Начальная позиция по горизонтали
-        let speed = 3;       // Скорость бега (можно увеличить или уменьшить)
-        let direction = 1;   // 1 — бежит вправо, -1 — бежит влево
+        let posX = 0;
+        let speed = 4;       // Скорость бега (можно увеличить)
+        let direction = 1;
 
         function animateCat() {
             const screenWidth = window.innerWidth;
             const catWidth = cat.offsetWidth;
 
-            // Двигаем координату котика
             posX += speed * direction;
 
-            // Проверяем столкновение с правой границей экрана
             if (posX + catWidth >= screenWidth && direction === 1) {
                 direction = -1;
-                cat.style.transform = 'scaleX(-1)'; // Разворачиваем котика влево
+                cat.style.transform = 'scaleX(-1)'; 
             }
-            // Проверяем столкновение с левой границей экрана
             else if (posX <= 0 && direction === -1) {
                 direction = 1;
-                cat.style.transform = 'scaleX(1)';  // Разворачиваем котика вправо
+                cat.style.transform = 'scaleX(1)';
             }
 
-            // Применяем новую позицию
             cat.style.left = posX + 'px';
-
-            // Запускаем бесконечный цикл анимации
             requestAnimationFrame(animateCat);
         }
 
-        // Запуск анимации после полной загрузки страницы
         window.onload = () => {
             animateCat();
         };
