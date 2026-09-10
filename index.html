@@ -18,46 +18,68 @@
             overflow: hidden;
         }
 
-        /* Кнопки переключения акций */
-        .tabs-container {
+        /* ИСПРАВЛЕНО: Контейнер-лента со скроллом для тикеров */
+        .tabs-scroll-container {
             display: flex;
-            justify-content: space-around;
+            gap: 8px;
             background-color: #1c2030;
-            padding: 12px 8px;
+            padding: 12px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             z-index: 10;
+            overflow-x: auto; /* Включаем горизонтальную прокрутку */
+            white-space: nowrap; /* Запрещаем перенос кнопок на новую строку */
+            scroll-behavior: smooth; /* Плавный скролл */
+            -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
         }
 
+        /* Скрываем некрасивый стандартный полосу прокрутки (скроллбар) */
+        .tabs-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Кнопки теперь фиксированной ширины, чтобы их можно было листать */
         .tab-button {
             background-color: #2a2e39;
             color: #b2b5be;
             border: none;
-            padding: 10px 18px;
+            padding: 10px 24px;
             font-size: 14px;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            flex-grow: 1;
-            margin: 0 4px;
-            text-align: center;
+            flex-shrink: 0; /* Запрещаем кнопкам сжиматься */
+            display: inline-block;
         }
 
-        /* Стиль для активной выбранной кнопки */
         .tab-button.active {
-            background-color: #2962ff; /* Фирменный синий цвет */
+            background-color: #2962ff;
             color: #ffffff;
             box-shadow: 0 0 8px rgba(41, 98, 255, 0.5);
         }
 
-        /* Контейнер виджета — теперь занимает 70% высоты экрана */
+        /* Область графиков (70% экрана) */
         .chart-section {
             height: 70vh; 
             width: 100%;
             background-color: #131722;
+            position: relative;
         }
 
-        /* Нижний блок для красоты, чтобы экран снизу не был пустым */
+        .chart-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .chart-wrapper.active {
+            display: block;
+        }
+
+        /* Нижний блок */
         .footer-info {
             flex-grow: 1;
             display: flex;
@@ -78,76 +100,75 @@
 </head>
 <body>
 
-    <!-- Меню выбора бумаг -->
-    <div class="tabs-container">
-        <button class="tab-button active" onclick="changeSymbol('MOEX:GAZP', this)">Газпром</button>
-        <button class="tab-button" onclick="changeSymbol('MOEX:SBER', this)">Сбербанк</button>
-        <button class="tab-button" onclick="changeSymbol('MOEX:ROSN', this)">Роснефть</button>
+    <!-- Меню со скроллом (сюда теперь можно дописывать сколько угодно компаний) -->
+    <div class="tabs-scroll-container">
+        <button class="tab-button active" onclick="switchTab('gazp', this)">Газпром</button>
+        <button class="tab-button" onclick="switchTab('sber', this)">Сбербанк</button>
+        <button class="tab-button" onclick="switchTab('rosn', this)">Роснефть</button>
+        <!-- Для теста скролла добавим еще пару компаний-пустышек, график подгрузится для трех основных -->
+        <button class="tab-button" onclick="alert('Для Лукойла нужно добавить блок графика в код ниже')">Лукойл</button>
+        <button class="tab-button" onclick="alert('Для Яндекса нужно добавить блок графика в код ниже')">Яндекс</button>
+        <button class="tab-button" onclick="alert('Для Магнита нужно добавить блок графика в код ниже')">Магнит</button>
     </div>
 
-    <!-- Область графика -->
+    <!-- Область графиков -->
     <div class="chart-section">
-        <div id="tv-widget-holder" style="height:100%; width:100%;"></div>
+        
+        <!-- Газпром -->
+        <div id="widget-gazp" class="chart-wrapper active">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+                <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {"autosize": true, "symbol": "MOEX:GAZP", "interval": "D", "timezone": "Europe/Moscow", "theme": "dark", "style": "1", "locale": "ru", "enable_publishing": false, "allow_symbol_change": false, "calendar": false, "support_host": "https://tradingview.com"}
+                </script>
+            </div>
+        </div>
+
+        <!-- Сбербанк -->
+        <div id="widget-sber" class="chart-wrapper">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+                <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {"autosize": true, "symbol": "MOEX:SBER", "interval": "D", "timezone": "Europe/Moscow", "theme": "dark", "style": "1", "locale": "ru", "enable_publishing": false, "allow_symbol_change": false, "calendar": false, "support_host": "https://tradingview.com"}
+                </script>
+            </div>
+        </div>
+
+        <!-- Роснефть -->
+        <div id="widget-rosn" class="chart-wrapper">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+                <div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {"autosize": true, "symbol": "MOEX:ROSN", "interval": "D", "timezone": "Europe/Moscow", "theme": "dark", "style": "1", "locale": "ru", "enable_publishing": false, "allow_symbol_change": false, "calendar": false, "support_host": "https://tradingview.com"}
+                </script>
+            </div>
+        </div>
+
     </div>
 
     <!-- Нижняя плашка -->
     <div class="footer-info">
-        <p>💡 Нажимайте на кнопки сверху для переключения котировок в реальном времени</p>
+        <p>💡 Листайте верхнюю панель пальцем влево-вправо, чтобы увидеть все доступные тикеры!</p>
     </div>
 
-    <!-- Загружаем сам скрипт TradingView -->
-    <script type="text/javascript" src="https://tradingview.com" async></script>
-
     <script type="text/javascript">
-        // Переменная для хранения настроек виджета
-        let widgetConfig = {
-            "autosize": true,
-            "symbol": "MOEX:GAZP", // Первая бумага при старте
-            "interval": "D",
-            "timezone": "Europe/Moscow",
-            "theme": "dark",
-            "style": "1",
-            "locale": "ru",
-            "enable_publishing": false,
-            "allow_symbol_change": false,
-            "calendar": false,
-            "support_host": "https://www.tradingview.com"
-        };
-
-        // Функция создания виджета
-        function renderWidget() {
-            const holder = document.getElementById('tv-widget-holder');
-            holder.innerHTML = ''; // Очищаем старый график
-
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = 'https://tradingview.com';
-            script.async = true;
-            script.text = JSON.stringify(widgetConfig);
-            
-            holder.appendChild(script);
-        }
-
-        // Функция смены тикера при клике на вкладку
-        function changeSymbol(newSymbol, buttonElement) {
-            // Если кликнули на уже активный тикер — ничего не делаем
-            if (widgetConfig.symbol === newSymbol) return;
-
-            // Меняем активный класс у кнопок
+        function switchTab(companyId, buttonElement) {
             const buttons = document.querySelectorAll('.tab-button');
             buttons.forEach(btn => btn.classList.remove('active'));
             buttonElement.classList.add('active');
 
-            // Обновляем тикер в конфигурации и перерисовываем график
-            widgetConfig.symbol = newSymbol;
-            renderWidget();
+            const wrappers = document.querySelectorAll('.chart-wrapper');
+            wrappers.forEach(wrap => wrap.classList.remove('active'));
+            
+            const targetWidget = document.getElementById('widget-' + companyId);
+            if(targetWidget) {
+                targetWidget.classList.add('active');
+            }
         }
 
-        // Старт скриптов
         window.onload = () => {
-            renderWidget();
             window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand(); // Разворачиваем окно ТГ Mini App на максимум
+            window.Telegram.WebApp.expand();
         };
     </script>
 </body>
