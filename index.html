@@ -636,5 +636,173 @@ document.getElementById('moexValue').textContent=moexIndex.toLocaleString('ru-RU
 document.getElementById('moexValue').classList.toggle('up-index',moexIndexChange>=0);
 document.getElementById('moexValue').classList.toggle('down-index',moexIndexChange<0);
 </script>
+
+<script>
+/* =========================
+   STAGE 1 — LIVE MOEX DATA
+   ========================= */
+const API_BASE = 'http://localhost:8000';
+let liveRefreshInFlight = false;
+const liveCandleCache = new Map();
+const liveQuotes = new Map();
+
+function livePrice(v){
+  const n = Number(v);
+  if(!Number.isFinite(n)) return '—';
+  const d = Math.abs(n) >= 1000 ? 1 : Math.abs(n) >= 100 ? 2 : 3;
+  return n.toLocaleString('ru-RU',{
+    minimumFractionDigits:d, maximumFractionDigits:d
+  }) + ' ₽';
+}
+function livePct(v){
+  const n = Number(v);
+  if(!Number.isFinite(n)) return '—';
+  const sign = n > 0 ? '+' : '';
+  return sign + n.toLocaleString('ru-RU',{
+    minimumFractionDigits:2, maximumFractionDigits:2
+  }) + '%';
+}
+function liveAbs(v){
+  const n = Number(v);
+  if(!Number.isFinite(n)) return '';
+  const sign = n > 0 ? '+' : '';
+  return sign + n.toLocaleString('ru-RU',{
+    minimumFractionDigits:0, maximumFractionDigits:3
+  }) + ' ₽';
+}
+
+async function apiMarket(){
+  const r = await fetch(API_BASE + '/api/market', {cache:'no-store'});
+  if(!r.ok) throw new Error('market ' + r.status);
+  return r.json();
+}
+async function apiCandles(ticker, interval=60, days=14){
+  const key = `${ticker}|${interval}|${days}`;
+  const cached = liveCandleCache.get(key);
+  if(cached && Date.now() - cached.ts < 60000) return cached.data;
+
+  const url = API_BASE + '/api/candles?symbol=' + encodeURIComponent(ticker) +
+    '&interval=' + interval + '&days=' + days;
+  const r = await fetch(url, {cache:'no-store'});
+  if(!r.ok) throw new Error('candles ' + r.status);
+  const data = await r.json();
+  liveCandleCache.set(key,{ts:Date.now(),data});
+  return data;
+}
+
+async function refreshLiveMarket(){
+  if(liveRefreshInFlight) return;
+  liveRefreshInFlight = true;
+  try{
+    const data = await apiMarket();
+    const idx = data.index || {};
+    const ivalue = Number(idx.value);
+    const ichange = Number(idx.change);
+
+    if(Number.isFinite(ivalue)){
+      moexIndex = ivalue;
+      const el = document.getElementById('moexValue');
+      if(el){
+        el.textContent = ivalue.toLocaleString('ru-RU',{
+          minimumFractionDigits:0, maximumFractionDigits:2
+        });
+        el.classList.toggle('up-index', !Number.isFinite(ichange) || ichange >= 0);
+        el.classList.toggle('down-index', Number.isFinite(ichange) && ichange < 0);
+      }
+    }
+
+    for(const q of (data.quotes || [])){
+      const s = stocks.find(x => x.t === q.ticker);
+      if(!s) continue;
+      const p = Number(q.price), pct = Number(q.change_pct), abs = Number(q.change_abs);
+      if(Number.isFinite(p)) s.p = livePrice(p);
+      if(Number.isFinite(pct)){
+        s.c = livePct(pct);
+        s.up = pct >= 0;
+      }
+      if(Number.isFinite(abs)) s.d = liveAbs(abs);
+      if(Array.isArray(q.spark) && q.spark.length > 1) s.a = q.spark;
+      liveQuotes.set(q.ticker,{price:p,pct,abs});
+    }
+    render();
+  }catch(err){
+    console.warn('Live MOEX unavailable:',err);
+  }finally{
+    liveRefreshInFlight = false;
+  }
+}
+
+function drawRealCandleBars(candles){
+  const svg = document.getElementById('detailChart');
+  if(!svg || !candles?.length) return;
+
+  const W=600, top=12, base=215;
+  const highs=candles.map(c=>Number(c.high)).filter(Number.isFinite);
+  const lows=candles.map(c=>Number(c.low)).filter(Number.isFinite);
+  if(!highs.length || !lows.length) return;
+
+  const min=Math.min(...lows), max=Math.max(...highs);
+  const y=v => base - ((v-min)/(max-min || 1))*(base-top);
+  const step=W/candles.length, candleW=Math.max(4,step*.58);
+
+  let out=`<line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="#777" stroke-width="1" opacity=".35"/>`;
+
+  candles.forEach((c,i)=>{
+    const o=Number(c.open),cl=Number(c.close),hi=Number(c.high),lo=Number(c.low);
+    if(![o,cl,hi,lo].every(Number.isFinite)) return;
+    const x=i*step+step/2, color=cl>=o?'#59c98a':'#df6069';
+    const yh=y(hi),yl=y(lo),yo=y(o),yc=y(cl);
+    const bodyY=Math.min(yo,yc), bodyH=Math.max(2,Math.abs(yc-yo));
+    out += `<line x1="${x.toFixed(1)}" y1="${yh.toFixed(1)}" x2="${x.toFixed(1)}" y2="${yl.toFixed(1)}" stroke="${color}" stroke-width="2"/>`;
+    out += `<rect x="${(x-candleW/2).toFixed(1)}" y="${bodyY.toFixed(1)}" width="${candleW.toFixed(1)}" height="${bodyH.toFixed(1)}" rx="1.5" fill="${color}"/>`;
+  });
+  svg.innerHTML=out;
+}
+
+/* Keep the original UI navigation. Only the stock detail gets live candles. */
+const baseOpenDetail = window.openDetail;
+window.openDetail = async function(ticker){
+  if(typeof baseOpenDetail === 'function') baseOpenDetail(ticker);
+  try{
+    const data = await apiCandles(ticker,60,14);
+    if(data.candles?.length){
+      drawRealCandleBars(data.candles);
+      const s = stocks.find(x=>x.t===ticker);
+      const last = data.candles[data.candles.length-1];
+      const prev = data.candles.length>1 ? data.candles[data.candles.length-2] : null;
+
+      const q = liveQuotes.get(ticker);
+      // Current quote and daily change come from /api/market.
+      // Candles are used only for the historical chart.
+      if(q && Number.isFinite(q.price))
+        document.getElementById('detailPrice').textContent = livePrice(q.price);
+
+      if(q && Number.isFinite(q.pct)){
+        const el=document.getElementById('detailChange');
+        el.textContent=livePct(q.pct) + (Number.isFinite(q.abs) ? ' ('+liveAbs(q.abs)+')' : '');
+        el.style.color=q.pct>=0?'var(--green)':'var(--red)';
+      }
+
+      if(s){
+        const pe=document.getElementById('detailPE');
+        const ev=document.getElementById('detailEV');
+        if(pe) pe.textContent=s.pe||'—';
+        if(ev) ev.textContent=s.ev||'—';
+        const cells=document.querySelectorAll('#stats .stat');
+        if(cells.length>=4){
+          cells[2].querySelector('b').textContent=s.c;
+          cells[3].querySelector('b').textContent=s.p;
+        }
+      }
+    }
+  }catch(err){
+    console.warn('Live candles unavailable:',err);
+  }
+};
+
+refreshLiveMarket();
+setInterval(refreshLiveMarket,60000);
+</script>
+
 </body>
 </html>
