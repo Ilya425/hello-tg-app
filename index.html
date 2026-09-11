@@ -147,22 +147,146 @@ button{border:0;background:none;color:inherit}
   height:76%;
 }
 
-/* MAP */
-#mapView{display:none;padding:16px}
-.map-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.card{
-  min-height:168px;border-radius:8px;padding:14px 12px 13px;
-  display:flex;flex-direction:column;cursor:pointer;overflow:hidden
-}
-.card.up-dark{background:#299332}.card.up{background:#35bb46}
-.card.up-light{background:#9ee5a5}.card.down{background:#e86b70}
-.card.down-dark{background:#b51a1d}.card.neutral{background:#cbbc91}
-.card-head{display:flex;align-items:center;gap:9px;min-width:0}
-.card .logo{width:51px;height:51px;min-width:51px;font-size:14px}
-.card-ticker{font-size:27px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-price{font-size:27px;text-align:center;margin-top:13px;white-space:nowrap}
-.card-change{font-size:19px;text-align:center;margin-top:7px;white-space:nowrap}
 
+.detail-summary{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:18px;
+}
+.detail-multiples{
+  min-width:112px;
+  display:grid;
+  gap:8px;
+  padding-left:15px;
+  border-left:1px solid rgba(255,255,255,.12);
+}
+.detail-multiples div{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  white-space:nowrap;
+}
+.detail-multiples span{
+  color:#aaa;
+  font-size:11px;
+}
+.detail-multiples b{
+  color:#f3f3f5;
+  font-size:15px;
+  font-weight:600;
+}
+
+/* MAP */
+#mapView{
+  display:none;
+  padding:10px 11px 12px;
+  background:#303036;
+}
+.map-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.card{
+  min-height:142px;
+  position:relative;
+  border-radius:11px;
+  padding:10px 8px 8px;
+  overflow:hidden;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 2px 8px rgba(0,0,0,.12);
+}
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 38%);
+  pointer-events:none;
+}
+.card.up-dark{background:#237c2c}.card.up{background:#35a844}
+.card.up-light{background:#78c77f}.card.down{background:#c95860}
+.card.down-dark{background:#9f2428}.card.neutral{background:#9a8a60}
+.card-head{
+  position:absolute;
+  z-index:2;
+  top:9px;
+  left:9px;
+  right:8px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:6px;
+  min-width:0;
+}
+.card .logo{
+  width:30px;
+  height:30px;
+  min-width:30px;
+  flex:0 0 30px;
+  font-size:10px;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+.card .logo svg{
+  width:100%;
+  height:100%;
+  display:block;
+}
+.card-ticker{
+  min-width:0;
+  max-width:calc(100% - 36px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:16px;
+  font-weight:700;
+  line-height:1;
+  color:#fff;
+}
+.card-price{
+  position:relative;
+  z-index:1;
+  margin-top:42px;
+  font-size:20px;
+  font-weight:500;
+  line-height:1;
+  white-space:nowrap;
+  color:#fff;
+}
+.card-change{
+  position:relative;
+  z-index:1;
+  margin-top:9px;
+  font-size:14px;
+  font-weight:650;
+  line-height:1;
+  white-space:nowrap;
+  color:#fff;
+}
+.card-metrics{
+  position:relative;
+  z-index:1;
+  margin-top:auto;
+  width:100%;
+  padding-top:6px;
+  border-top:1px solid rgba(255,255,255,.18);
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  font-size:9px;
+  line-height:1;
+  color:rgba(255,255,255,.78);
+  white-space:nowrap;
+}
+.card-metrics b{font-size:9px;color:#fff}
 /* SUBMENU */
 .subnav{
   position:fixed;
@@ -228,7 +352,16 @@ button{border:0;background:none;color:inherit}
 }
 .nav{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;padding-bottom:7px;color:#bcbcc1}
 .nav .ico{font-size:29px;line-height:1;height:32px;display:flex;align-items:center;justify-content:center}
-.listing-icon{font-size:24px !important;letter-spacing:-3px;transform:scaleX(1.08)}
+.listing-icon{
+  width:32px !important;
+  height:32px !important;
+  transform:none;
+}
+.listing-icon svg{
+  width:29px;
+  height:27px;
+  display:block;
+}
 .nav span{font-size:15px;line-height:18px;height:18px;white-space:nowrap}.nav.active{color:var(--teal)}
 .market-symbol{
   width:46px;height:32px;
@@ -243,11 +376,11 @@ button{border:0;background:none;color:inherit}
 .detail{display:none;min-height:100vh;background:var(--bg)}
 .detail.show{display:block}
 .detail-head{height:75px;background:var(--panel);display:flex;align-items:center;gap:12px;padding:0 18px}
-.back{font-size:36px}.detail-title strong{display:block;font-size:21px}.detail-title span{font-size:15px;color:#aaa}
+.back{font-size:36px}.detail-title strong{display:block;font-size:20px}.detail-title span{font-size:15px;color:#aaa}
 .hero{padding:25px 18px;background:var(--panel)}
-.bigprice{font-size:38px}.bigchange{font-size:20px;margin-top:7px;color:var(--green)}
+.bigprice{font-size:36px}.bigchange{font-size:19px;margin-top:7px;color:var(--green)}
 .chartbox{margin-top:18px;background:#38383f;border-radius:15px;padding:15px}
-.chart{width:100%;height:230px;display:block}
+.chart{width:100%;height:230px;display:block;min-height:230px}
 .periods{display:flex;justify-content:space-between;color:#aaa}.periods button{padding:7px 10px;border-radius:8px}
 .periods button.active{background:#505058;color:#fff}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
@@ -271,10 +404,10 @@ button{border:0;background:none;color:inherit}
   .list-price{font-size:19px}
   .list-change{font-size:13px;margin-top:4px}
   .map-grid{gap:8px}
-  .card{min-height:140px;padding:9px 7px}
-  .card .logo{width:38px;height:38px;min-width:38px}
-  .card-ticker{font-size:18px}
-  .card-price{font-size:19px}
+  .card{min-height:132px;padding:8px 6px;border-radius:10px}
+  .card .logo{width:28px;height:28px;min-width:28px}
+  .card-ticker{font-size:15px}
+  .card-price{font-size:17px}
   .card-change{font-size:13px}
   .subnav{height:58px}
   .subbtn{font-size:15px;padding-top:4px;padding-bottom:6px;gap:3px}
@@ -282,8 +415,13 @@ button{border:0;background:none;color:inherit}
   .bottom{height:86px}
   .nav span{font-size:14px}
   .nav .ico{font-size:27px;height:32px}
-  .listing-icon{font-size:22px !important}
+  .listing-icon{width:31px !important;height:31px !important}
+  .listing-icon svg{width:28px;height:26px}
   .market-symbol{width:44px;height:32px;font-size:25px;margin-bottom:6px}
+  .detail-summary{gap:10px}
+  .detail-multiples{min-width:104px;padding-left:11px;gap:7px}
+  .detail-multiples span{font-size:10px}
+  .detail-multiples b{font-size:14px}
 }
 </style>
 </head>
@@ -315,9 +453,17 @@ button{border:0;background:none;color:inherit}
     <div class="detail-title" id="detailTitle"></div>
   </div>
   <div class="hero">
-    <div class="bigprice" id="detailPrice"></div>
-    <div class="bigchange" id="detailChange"></div>
-    <div class="chartbox">
+    <div class="detail-summary">
+        <div class="detail-main-values">
+          <div class="bigprice" id="detailPrice"></div>
+          <div class="bigchange" id="detailChange"></div>
+        </div>
+        <div class="detail-multiples">
+          <div><span>P/E</span><b id="detailPE">—</b></div>
+          <div><span>EV/EBITDA</span><b id="detailEV">—</b></div>
+        </div>
+      </div>
+      <div class="chartbox">
       <svg id="detailChart" class="chart" viewBox="0 0 600 230" preserveAspectRatio="none"></svg>
       <div class="periods"><button>1Д</button><button class="active">1Н</button><button>1М</button><button>3М</button><button>1Г</button></div>
     </div>
@@ -335,7 +481,13 @@ button{border:0;background:none;color:inherit}
 <nav class="bottom">
   <button class="nav" onclick="tab('Импульсы')"><div class="ico">✣</div><span>Импульсы</span></button>
   <button class="nav active"><div class="market-symbol">◆</div><span>IMOEX</span></button>
-  <button class="nav" onclick="tab('Листинг')"><div class="ico listing-icon">▂▅▇</div><span>Листинг</span></button>
+  <button class="nav" onclick="tab('Листинг')"><div class="ico listing-icon" aria-hidden="true">
+      <svg viewBox="0 0 32 28">
+        <path d="M4 24V5M4 24H29" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M8 19l5-5 4 3 7-8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="24" cy="9" r="2.2" fill="currentColor"/>
+      </svg>
+    </div><span>Листинг</span></button>
   <button class="nav" onclick="tab('Поток')"><div class="ico">◉</div><span>Поток</span></button>
   <button class="nav" onclick="tab('Профиль')"><div class="ico">⚙</div><span>Профиль</span></button>
 </nav>
@@ -347,28 +499,41 @@ if(tg){tg.ready();tg.expand();}
 let moexIndex=2286;
 const moexIndexChange=+0.74;
 
+
+const logoSvg = {
+  LKOH:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#ed173d"/><rect x="17" y="15" width="30" height="34" rx="2" fill="none" stroke="#fff" stroke-width="3"/><text x="32" y="39" text-anchor="middle" font-size="22" font-family="Arial" font-weight="700" fill="#fff">Л</text></svg>`,
+  SBER:`<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17b56a"/><stop offset="1" stop-color="#71d32d"/></linearGradient></defs><circle cx="32" cy="32" r="31" fill="url(#sg)"/><path d="M19 29a14 14 0 1 0 5-9l8 8" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="39" cy="18" r="3" fill="#fff"/></svg>`,
+  GAZP:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#0a3a83"/><path d="M37 13c-4 6-12 11-12 20 0 7 5 12 11 12 7 0 11-5 11-12 0-7-5-11-10-20z" fill="#2aa6ff"/><path d="M34 44c-4-2-6-5-6-9 0-4 2-8 5-12-1 6 2 9 5 13 2 3 1 6-4 8z" fill="#fff"/></svg>`,
+  YDEX:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#ff2448"/><text x="32" y="43" text-anchor="middle" font-size="31" font-family="Arial" font-weight="700" fill="#fff">Я</text></svg>`,
+  TATN:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#8ba96f"/><path d="M32 49C19 40 20 22 36 14c-2 9 6 13 7 19 1 7-4 13-11 16z" fill="#d51f32"/><path d="M31 44c-7-8-2-17 6-24-1 8 5 11 5 17 0 4-4 7-11 7z" fill="#2eaf5d"/></svg>`,
+  T:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#ffd02f"/><circle cx="32" cy="32" r="17" fill="#fff" opacity=".35"/><text x="32" y="40" text-anchor="middle" font-size="24" font-family="Arial" font-weight="700" fill="#111">T</text></svg>`,
+  GMKN:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#090d14"/><path d="M17 27h22l8 8-8 8H17l8-8z" fill="#1685db"/><path d="M23 23l16 18" stroke="#4bb8ff" stroke-width="4" stroke-linecap="round"/></svg>`,
+  NVTK:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#080c12"/><path d="M17 42c12-3 17-12 15-23 8 3 12 8 13 15-2 8-11 13-20 12z" fill="#20c5f5"/><path d="M19 36c8-1 11-6 10-12" fill="none" stroke="#1178ff" stroke-width="3"/></svg>`,
+  ROSN:`<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#ffc928"/><path d="M17 21h30v22H17z" fill="#111"/><path d="M23 17v30M32 14v36M41 17v30" stroke="#ffc928" stroke-width="5"/></svg>`
+};
+
 const stocks=[
- {t:'LKOH',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/LUK%20OIL%20Logo.svg',n:'ЛУКОЙЛ',p:'5 295,5 ₽',c:'+1,93%',d:'+100,5 ₽',l:'Л',cl:'red',card:'up-dark',up:true,a:[30,34,31,39,43,41,48,53,50,58,61,67]},
- {t:'SBER',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Logo%20Sberbank.svg',n:'Сбербанк',p:'280,88 ₽',c:'+1,39%',d:'+3,84 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[35,38,32,42,48,45,55,60,58,68,73,70]},
- {t:'GAZP',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Gazprom%20logo.svg',n:'Газпром',p:'90,57 ₽',c:'+2,06%',d:'+1,83 ₽',l:'G',cl:'blue',card:'up-dark',up:true,a:[28,31,27,35,39,38,46,51,49,56,61,66]},
- {t:'YDEX',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Yandex%20logo.svg',n:'Яндекс',p:'3 816,00 ₽',c:'-0,469%',d:'18,00 ₽',l:'Я',cl:'red',card:'down',up:false,a:[68,63,66,58,61,54,57,49,52,44,42,37]},
- {t:'TATN',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Tatneft%20Logo.svg',n:'Татнефть',p:'622,7 ₽',c:'+0,793%',d:'+4,9 ₽',l:'✦',cl:'green',card:'up',up:true,a:[32,35,33,40,43,41,47,52,50,57,61,65]},
- {t:'T',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/T-Bank%20RU%20logo.svg',n:'Т-Технологии',p:'261,82 ₽',c:'+0,715%',d:'+1,86 ₽',l:'✥',cl:'yellow',card:'up',up:true,a:[34,37,34,42,45,44,50,54,52,57,62,64]},
- {t:'NVTK',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Novatek%20logo.svg',n:'Новатэк',p:'1 035,7 ₽',c:'+5,78%',d:'+56,6 ₽',l:'▶',cl:'blue',card:'up-dark',up:true,a:[20,24,21,28,25,38,43,50,60,72,69,78]},
- {t:'GMKN',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Norilsk%20Nickel%20logo.svg',n:'Норникель',p:'131,98 ₽',c:'-1,90%',d:'2,56 ₽',l:'N',cl:'blue',card:'down-dark',up:false,a:[70,66,69,62,64,58,60,53,50,47,49,43]},
- {t:'PLZL',n:'Полюс',p:'983,8 ₽',c:'+0,245%',d:'+2,4 ₽',l:'✣',cl:'yellow',card:'up-light',up:true,a:[43,45,42,47,49,48,51,54,52,55,57,59]},
- {t:'VTBR',n:'ВТБ',p:'51,71 ₽',c:'+0,76%',d:'+0,39 ₽',l:'ВТБ',cl:'blue',card:'up',up:true,a:[39,40,38,43,47,45,49,53,51,55,57,60]},
- {t:'X5',n:'X5',p:'1 803,0 ₽',c:'+0,055%',d:'+1,0 ₽',l:'X5',cl:'white',card:'neutral',up:true,a:[47,48,46,50,51,50,52,53,51,54,55,56]},
- {t:'ROSN',logoUrl:'https://commons.wikimedia.org/wiki/Special:FilePath/Rosneft%20logo.svg',n:'Роснефть',p:'351,70 ₽',c:'+5,65%',d:'+18,80 ₽',l:'◆',cl:'yellow',card:'up-dark',up:true,a:[22,18,25,20,32,38,35,48,44,55,51,62]},
- {t:'SBERP',n:'Сбер пр.',p:'280,96 ₽',c:'+1,40%',d:'+3,89 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[34,36,32,41,46,44,50,55,53,62,66,71]},
- {t:'OZON',n:'Ozon',p:'2 622,5 ₽',c:'+0,153%',d:'+4,0 ₽',l:'O',cl:'blue',card:'up-light',up:true,a:[43,45,42,46,48,47,50,52,51,53,54,56]},
- {t:'SNGS',n:'Сургутнефтегаз',p:'16,600 ₽',c:'+2,95%',d:'+0,475 ₽',l:'С',cl:'blue',card:'up-dark',up:true,a:[28,30,27,33,38,36,43,48,47,52,58,63]},
- {t:'SNGSP',n:'Сургут пр.',p:'41,725 ₽',c:'-0,631%',d:'0,265 ₽',l:'С',cl:'red',card:'down',up:false,a:[64,60,63,56,58,51,54,47,49,43,45,39]},
- {t:'MOEX',n:'Московская биржа',p:'150,86 ₽',c:'+0,567%',d:'+0,85 ₽',l:'MOEX',cl:'red',card:'up',up:true,a:[35,37,34,41,44,43,49,52,51,56,60,63]},
- {t:'CHMF',n:'Северсталь',p:'653,8 ₽',c:'+1,77%',d:'+11,4 ₽',l:'◆',cl:'blue',card:'up-dark',up:true,a:[30,33,31,38,41,40,47,51,49,54,58,61]},
- {t:'MTSS',n:'МТС',p:'195,45 ₽',c:'+2,95%',d:'+5,60 ₽',l:'M',cl:'red',card:'up-dark',up:true,a:[32,35,31,39,44,42,49,54,51,58,62,67]},
- {t:'ALRS',n:'АЛРОСА',p:'74,20 ₽',c:'+1,45%',d:'+1,06 ₽',l:'A',cl:'orange',card:'up',up:true,a:[34,36,33,40,43,42,47,51,49,54,57,60]},
- {t:'NLMK',n:'НЛМК',p:'122,40 ₽',c:'+1,10%',d:'+1,33 ₽',l:'N',cl:'blue',card:'up-dark',up:true,a:[35,37,34,41,43,42,46,50,48,53,56,59]}
+ {t:'LKOH',n:'ЛУКОЙЛ',p:'5 295,5 ₽',c:'+1,93%',d:'+100,5 ₽',l:'Л',cl:'red',card:'up-dark',up:true,a:[30,34,31,39,43,41,48,53,50,58,61,67],pe:'8,6',ev:'4,2'},
+ {t:'SBER',n:'Сбербанк',p:'280,88 ₽',c:'+1,39%',d:'+3,84 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[35,38,32,42,48,45,55,60,58,68,73,70],pe:'5,4',ev:'3,1'},
+ {t:'GAZP',n:'Газпром',p:'90,57 ₽',c:'+2,06%',d:'+1,83 ₽',l:'G',cl:'blue',card:'up-dark',up:true,a:[28,31,27,35,39,38,46,51,49,56,61,66],pe:'3,0',ev:'2,6'},
+ {t:'YDEX',n:'Яндекс',p:'3 816,00 ₽',c:'-0,469%',d:'18,00 ₽',l:'Я',cl:'red',card:'down',up:false,a:[68,63,66,58,61,54,57,49,52,44,42,37],pe:'18,2',ev:'11,7'},
+ {t:'TATN',n:'Татнефть',p:'622,7 ₽',c:'+0,793%',d:'+4,9 ₽',l:'✦',cl:'green',card:'up',up:true,a:[32,35,33,40,43,41,47,52,50,57,61,65],pe:'6,2',ev:'3,9'},
+ {t:'T',n:'Т-Технологии',p:'261,82 ₽',c:'+0,715%',d:'+1,86 ₽',l:'✥',cl:'yellow',card:'up',up:true,a:[34,37,34,42,45,44,50,54,52,57,62,64],pe:'9,8',ev:'5,6'},
+ {t:'NVTK',n:'Новатэк',p:'1 035,7 ₽',c:'+5,78%',d:'+56,6 ₽',l:'▶',cl:'blue',card:'up-dark',up:true,a:[20,24,21,28,25,38,43,50,60,72,69,78],pe:'12,1',ev:'7,4'},
+ {t:'GMKN',n:'Норникель',p:'131,98 ₽',c:'-1,90%',d:'2,56 ₽',l:'N',cl:'blue',card:'down-dark',up:false,a:[70,66,69,62,64,58,60,53,50,47,49,43],pe:'7,4',ev:'5,0'},
+ {t:'PLZL',n:'Полюс',p:'983,8 ₽',c:'+0,245%',d:'+2,4 ₽',l:'✣',cl:'yellow',card:'up-light',up:true,a:[43,45,42,47,49,48,51,54,52,55,57,59],pe:'13,6',ev:'8,7'},
+ {t:'VTBR',n:'ВТБ',p:'51,71 ₽',c:'+0,76%',d:'+0,39 ₽',l:'ВТБ',cl:'blue',card:'up',up:true,a:[39,40,38,43,47,45,49,53,51,55,57,60],pe:'3,8',ev:'2,4'},
+ {t:'X5',n:'X5',p:'1 803,0 ₽',c:'+0,055%',d:'+1,0 ₽',l:'X5',cl:'white',card:'neutral',up:true,a:[47,48,46,50,51,50,52,53,51,54,55,56],pe:'12,7',ev:'7,3'},
+ {t:'ROSN',n:'Роснефть',p:'351,70 ₽',c:'+5,65%',d:'+18,80 ₽',l:'◆',cl:'yellow',card:'up-dark',up:true,a:[22,18,25,20,32,38,35,48,44,55,51,62],pe:'5,8',ev:'3,7'},
+ {t:'SBERP',n:'Сбер пр.',p:'280,96 ₽',c:'+1,40%',d:'+3,89 ₽',l:'С',cl:'yellow',card:'up',up:true,a:[34,36,32,41,46,44,50,55,53,62,66,71],pe:'5,4',ev:'3,1'},
+ {t:'OZON',n:'Ozon',p:'2 622,5 ₽',c:'+0,153%',d:'+4,0 ₽',l:'O',cl:'blue',card:'up-light',up:true,a:[43,45,42,46,48,47,50,52,51,53,54,56],pe:'—',ev:'—'},
+ {t:'SNGS',n:'Сургутнефтегаз',p:'16,600 ₽',c:'+2,95%',d:'+0,475 ₽',l:'С',cl:'blue',card:'up-dark',up:true,a:[28,30,27,33,38,36,43,48,47,52,58,63],pe:'4,1',ev:'2,8'},
+ {t:'SNGSP',n:'Сургут пр.',p:'41,725 ₽',c:'-0,631%',d:'0,265 ₽',l:'С',cl:'red',card:'down',up:false,a:[64,60,63,56,58,51,54,47,49,43,45,39],pe:'4,0',ev:'2,7'},
+ {t:'MOEX',n:'Московская биржа',p:'150,86 ₽',c:'+0,567%',d:'+0,85 ₽',l:'MOEX',cl:'red',card:'up',up:true,a:[35,37,34,41,44,43,49,52,51,56,60,63],pe:'6,9',ev:'4,8'},
+ {t:'CHMF',n:'Северсталь',p:'653,8 ₽',c:'+1,77%',d:'+11,4 ₽',l:'◆',cl:'blue',card:'up-dark',up:true,a:[30,33,31,38,41,40,47,51,49,54,58,61],pe:'7,0',ev:'4,6'},
+ {t:'MTSS',n:'МТС',p:'195,45 ₽',c:'+2,95%',d:'+5,60 ₽',l:'M',cl:'red',card:'up-dark',up:true,a:[32,35,31,39,44,42,49,54,51,58,62,67],pe:'8,9',ev:'4,9'},
+ {t:'ALRS',n:'АЛРОСА',p:'74,20 ₽',c:'+1,45%',d:'+1,06 ₽',l:'A',cl:'orange',card:'up',up:true,a:[34,36,33,40,43,42,47,51,49,54,57,60],pe:'6,6',ev:'4,1'},
+ {t:'NLMK',n:'НЛМК',p:'122,40 ₽',c:'+1,10%',d:'+1,33 ₽',l:'N',cl:'blue',card:'up-dark',up:true,a:[35,37,34,41,43,42,46,50,48,53,56,59],pe:'7,1',ev:'4,5'}
 ];
 
 function spark(a,up){
@@ -384,7 +549,7 @@ function render(){
 
  document.getElementById('listView').innerHTML=list.map(s=>`
   <article class="list-row" onclick="openDetail('${s.t}')">
-    <div class="logo img-logo ${s.cl}"><img src="${s.logoUrl||''}" alt="${s.t}" onerror="this.style.display='none';this.parentElement.textContent=s.l"></div>
+    <div class="logo img-logo ${s.cl}">${logoSvg[s.t]||s.l}</div>
     <div class="list-right"><div class="name">${s.n}</div><div class="ticker">MOEX → ${s.t}</div></div>
     ${spark(s.a,s.up)}
     <div><div class="list-price">${s.p}</div><div class="list-change ${s.up?'':'red'}">${s.c} (${s.d})</div></div>
@@ -393,9 +558,16 @@ function render(){
 
  document.getElementById('mapGrid').innerHTML=list.map(s=>`
   <article class="card ${s.card}" onclick="openDetail('${s.t}')">
-    <div class="card-head"><div class="logo img-logo ${s.cl}"><img src="${s.logoUrl||''}" alt="${s.t}" onerror="this.style.display='none';this.parentElement.textContent=s.l"></div><div class="card-ticker">${s.t}</div></div>
+    <div class="card-head">
+      <div class="logo img-logo ${s.cl}">${logoSvg[s.t]||s.l}</div>
+      <div class="card-ticker">${s.t}</div>
+    </div>
     <div class="card-price">${s.p}</div>
-    <div class="card-change">${s.c} (${s.d})</div>
+    <div class="card-change">${s.c}</div>
+    <div class="card-metrics">
+      <span>P/E <b>${s.pe||'—'}</b></span>
+      <span>EV/EBITDA <b>${s.ev||'—'}</b></span>
+    </div>
   </article>
  `).join('');
 }
@@ -422,7 +594,11 @@ function openDetail(t){
  document.getElementById('detail').classList.add('show');
  document.getElementById('detailTitle').innerHTML='<strong>'+s.n+'</strong><span>MOEX → '+s.t+'</span>';
  document.getElementById('detailPrice').textContent=s.p;
+ document.getElementById('detailPE').textContent=s.pe||'—';
+ document.getElementById('detailEV').textContent=s.ev||'—';
  document.getElementById('detailChange').textContent=s.c+' ('+s.d+')';
+ document.getElementById('detailPE').textContent=s.pe||'—';
+ document.getElementById('detailEV').textContent=s.ev||'—';
  document.getElementById('detailChange').style.color=s.up?'var(--green)':'var(--red)';
  drawChart(s.a,s.up);
  document.getElementById('stats').innerHTML=
@@ -434,13 +610,17 @@ function openDetail(t){
 }
 
 function drawChart(a,up){
- const min=Math.min(...a)-3,max=Math.max(...a)+3;
- const pts=a.map((v,i)=>[10+i*580/(a.length-1),205-(v-min)/(max-min)*190]);
- const d=pts.map((q,i)=>(i?'L':'M')+q[0]+' '+q[1]).join(' ');
- document.getElementById('detailChart').innerHTML=
- '<path d="'+d+' L590 210 L10 210 Z" fill="url(#g)"/>'+
- '<path d="'+d+'" fill="none" stroke="'+(up?'#59c98a':'#df6069')+'" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
- '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-opacity=".22"/><stop offset="1" stop-opacity="0"/></linearGradient></defs>';
+ const min=Math.min(...a), max=Math.max(...a), base=220;
+ const step=600/a.length, barW=Math.max(8,step-8);
+ let out='<line x1="0" y1="'+base+'" x2="600" y2="'+base+'" stroke="#777" stroke-width="1" opacity=".35"/>';
+ a.forEach((v,i)=>{
+   const h=25+(v-min)/(max-min||1)*165;
+   const x=4+i*step, y=base-h;
+   const rising=i===0?up:a[i]>=a[i-1];
+   const fill=rising?'#59c98a':'#df6069';
+   out+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="2" fill="'+fill+'"/>';
+ });
+ document.getElementById('detailChart').innerHTML=out;
 }
 function closeDetail(){
  document.getElementById('detail').classList.remove('show');
