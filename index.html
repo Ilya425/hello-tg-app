@@ -600,7 +600,8 @@ function openDetail(t){
  document.getElementById('detailPE').textContent=s.pe||'—';
  document.getElementById('detailEV').textContent=s.ev||'—';
  document.getElementById('detailChange').style.color=s.up?'var(--green)':'var(--red)';
- drawChart(s.a,s.up);
+ document.getElementById('detailChart').innerHTML =
+   '<text x="300" y="115" text-anchor="middle" fill="#aaa" font-size="16">Собираем график…</text>';
  document.getElementById('stats').innerHTML=
  '<div class="stat"><small>Тикер</small><b>'+s.t+'</b></div>'+
  '<div class="stat"><small>Рынок</small><b>MOEX</b></div>'+
