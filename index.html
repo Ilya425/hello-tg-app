@@ -381,7 +381,24 @@ button{border:0;background:none;color:inherit}
 .bigprice{font-size:36px}.bigchange{font-size:19px;margin-top:7px;color:var(--green)}
 .chartbox{margin-top:18px;background:#38383f;border-radius:15px;padding:15px}
 .chart{width:100%;height:230px;display:block;min-height:230px}
-.periods{display:flex;justify-content:space-between;color:#aaa}.periods button{padding:7px 10px;border-radius:8px}
+.periods{
+  display:flex;
+  gap:5px;
+  color:#aaa;
+  overflow-x:auto;
+  padding:2px 1px 1px;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.periods::-webkit-scrollbar{display:none}
+.periods button{
+  flex:0 0 auto;
+  min-width:42px;
+  padding:7px 8px;
+  border-radius:8px;
+  color:#aaa;
+}
+.periods button.active{background:#505058;color:#fff}
 .periods button.active{background:#505058;color:#fff}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
 .stat{background:var(--bg);padding:17px 20px}.stat small{display:block;color:#aaa;margin-bottom:6px}
@@ -418,6 +435,7 @@ button{border:0;background:none;color:inherit}
   .listing-icon{width:31px !important;height:31px !important}
   .listing-icon svg{width:28px;height:26px}
   .market-symbol{width:44px;height:32px;font-size:25px;margin-bottom:6px}
+  .periods{gap:4px}.periods button{min-width:38px;padding:6px 6px;font-size:12px}
   .detail-summary{gap:10px}
   .detail-multiples{min-width:104px;padding-left:11px;gap:7px}
   .detail-multiples span{font-size:10px}
@@ -465,7 +483,24 @@ button{border:0;background:none;color:inherit}
       </div>
       <div class="chartbox">
       <svg id="detailChart" class="chart" viewBox="0 0 600 230" preserveAspectRatio="none"></svg>
-      <div class="periods"><button>1Д</button><button class="active">1Н</button><button>1М</button><button>3М</button><button>1Г</button></div>
+      <div class="periods" id="periods">
+        <button data-tf="1min">1м</button>
+        <button data-tf="5min">5м</button>
+        <button data-tf="15min">15м</button>
+        <button data-tf="30min">30м</button>
+        <button data-tf="1h" class="active">1ч</button>
+        <button data-tf="4h">4ч</button>
+        <button data-tf="6h">6ч</button>
+        <button data-tf="12h">12ч</button>
+        <button data-tf="1d">1д</button>
+        <button data-tf="3d">3д</button>
+        <button data-tf="7d">7д</button>
+        <button data-tf="14d">14д</button>
+        <button data-tf="1mo">1мес</button>
+        <button data-tf="3mo">3мес</button>
+        <button data-tf="6mo">6мес</button>
+        <button data-tf="1y">1г</button>
+      </div>
     </div>
   </div>
   <div class="stats" id="stats"></div>
@@ -600,8 +635,7 @@ function openDetail(t){
  document.getElementById('detailPE').textContent=s.pe||'—';
  document.getElementById('detailEV').textContent=s.ev||'—';
  document.getElementById('detailChange').style.color=s.up?'var(--green)':'var(--red)';
- document.getElementById('detailChart').innerHTML =
-   '<text x="300" y="115" text-anchor="middle" fill="#aaa" font-size="16">Собираем график…</text>';
+ document.getElementById('detailChart').innerHTML = "<text x='300' y='115' text-anchor='middle' fill='#aaa' font-size='16'>Загрузка графика…</text>";
  document.getElementById('stats').innerHTML=
  '<div class="stat"><small>Тикер</small><b>'+s.t+'</b></div>'+
  '<div class="stat"><small>Рынок</small><b>MOEX</b></div>'+
@@ -646,6 +680,28 @@ const API_BASE = 'https://hello-tg-app.onrender.com';
 let liveRefreshInFlight = false;
 const liveCandleCache = new Map();
 const liveQuotes = new Map();
+
+const TIMEFRAMES = {
+  '1min': {label:'1м',   interval:1,      days:1},
+  '5min': {label:'5м',   interval:5,      days:3},
+  '15min':{label:'15м',  interval:15,     days:7},
+  '30min':{label:'30м',  interval:30,     days:14},
+  '1h':   {label:'1ч',   interval:60,     days:14},
+  '4h':   {label:'4ч',   interval:240,    days:60},
+  '6h':   {label:'6ч',   interval:360,    days:90},
+  '12h':  {label:'12ч',  interval:720,    days:180},
+  '1d':   {label:'1д',   interval:1440,   days:365},
+  '3d':   {label:'3д',   interval:4320,   days:730},
+  '7d':   {label:'7д',   interval:10080,  days:1825},
+  '14d':  {label:'14д',  interval:20160,  days:3650},
+  '1mo':  {label:'1мес', interval:43200,  days:3650},
+  '3mo':  {label:'3мес', interval:129600, days:3650},
+  '6mo':  {label:'6мес', interval:259200, days:3650},
+  '1y':   {label:'1г',   interval:525600, days:3650}
+};
+
+let currentTicker = null;
+let currentTimeframe = '1h';
 
 function livePrice(v){
   const n = Number(v);
@@ -763,9 +819,15 @@ function drawRealCandleBars(candles){
 /* Keep the original UI navigation. Only the stock detail gets live candles. */
 const baseOpenDetail = window.openDetail;
 window.openDetail = async function(ticker){
+  currentTicker = ticker;
   if(typeof baseOpenDetail === 'function') baseOpenDetail(ticker);
+  const loadingSvg=document.getElementById('detailChart');
+  if(loadingSvg){
+    loadingSvg.innerHTML='<text x="300" y="115" text-anchor="middle" fill="#aaa" font-size="15">Загрузка графика…</text>';
+  }
   try{
-    const data = await apiCandles(ticker,60,14);
+    const tf = TIMEFRAMES[currentTimeframe] || TIMEFRAMES['1h'];
+    const data = await apiCandles(ticker, tf.interval, tf.days);
     if(data.candles?.length){
       drawRealCandleBars(data.candles);
       const s = stocks.find(x=>x.t===ticker);
@@ -800,6 +862,41 @@ window.openDetail = async function(ticker){
     console.warn('Live candles unavailable:',err);
   }
 };
+
+async function loadCurrentTimeframe(){
+  if(!currentTicker) return;
+  const svg=document.getElementById('detailChart');
+  if(svg){
+    svg.innerHTML='<text x="300" y="115" text-anchor="middle" fill="#aaa" font-size="15">Загрузка графика…</text>';
+  }
+  try{
+    const tf=TIMEFRAMES[currentTimeframe] || TIMEFRAMES['1h'];
+    const data=await apiCandles(currentTicker,tf.interval,tf.days);
+    if(data.candles?.length){
+      drawRealCandleBars(data.candles);
+    }else if(svg){
+      svg.innerHTML='<text x="300" y="115" text-anchor="middle" fill="#aaa" font-size="15">Нет данных</text>';
+    }
+  }catch(err){
+    console.warn('Timeframe unavailable:',err);
+    if(svg){
+      svg.innerHTML='<text x="300" y="115" text-anchor="middle" fill="#aaa" font-size="15">Нет данных для этого таймфрейма</text>';
+    }
+  }
+}
+
+function setTimeframe(tf){
+  if(!TIMEFRAMES[tf] || !currentTicker) return;
+  currentTimeframe=tf;
+  document.querySelectorAll('#periods button[data-tf]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.tf===tf);
+  });
+  loadCurrentTimeframe();
+}
+
+document.querySelectorAll('#periods button[data-tf]').forEach(btn=>{
+  btn.addEventListener('click',()=>setTimeframe(btn.dataset.tf));
+});
 
 refreshLiveMarket();
 setInterval(refreshLiveMarket,60000);
