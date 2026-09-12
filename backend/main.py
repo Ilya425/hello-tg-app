@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
+import datetime
 from typing import Any
 
 import requests
@@ -164,173 +165,163 @@ def get_imoex() -> dict[str, Any]:
     return {"value": None, "change": None}
 
 
-def _fetch_candles_page(
-    symbol: str,
-    interval: int,
-    since: date,
-    till: date,
-) -> list[dict[str, Any]]:
-    url = (
-        f"{MOEX_ISS}/engines/stock/markets/shares/"
-        f"boards/{BOARD}/securities/{symbol}/candles.json"
-    )
+def _clean_candle(item: dict[str, Any]) -> dict[str, Any] | None:
+    """Normalize one MOEX candle row and drop incomplete rows."""
+    close = item.get("close")
+    if close is None:
+        return None
 
-    result: list[dict[str, Any]] = []
-    start_at = 0
+    try:
+        open_v = float(item["open"])
+        high_v = float(item["high"])
+        low_v = float(item["low"])
+        close_v = float(close)
+        volume_v = float(item.get("volume") or 0)
+    except (TypeError, ValueError, KeyError):
+        return None
 
-    # MOEX ISS limits the number of returned rows per page.
-    # Page through the history so 1-minute / long-period requests
-    # do not silently truncate at the first 500 rows.
-    for _ in range(40):
-        payload = fetch_json(url, {
-            "iss.meta": "off",
-            "from": since.isoformat(),
-            "till": till.isoformat(),
-            "interval": interval,
-            "start": start_at,
-        })
-        page = rows(payload, "candles")
-
-        if not page:
-            break
-
-        for item in page:
-            if item.get("close") is not None:
-                result.append({
-                    "open": item.get("open"),
-                    "high": item.get("high"),
-                    "low": item.get("low"),
-                    "close": item.get("close"),
-                    "volume": item.get("volume"),
-                    "begin": item.get("begin"),
-                    "end": item.get("end"),
-                })
-
-        if len(page) < 500:
-            break
-
-        start_at += len(page)
-
-    result.sort(key=lambda x: str(x.get("begin") or ""))
-    return result
+    return {
+        "open": open_v,
+        "high": high_v,
+        "low": low_v,
+        "close": close_v,
+        "volume": volume_v,
+        "begin": item.get("begin"),
+        "end": item.get("end"),
+    }
 
 
-def _aggregate_buckets(
-    candles: list[dict[str, Any]],
-    key_fn,
-) -> list[dict[str, Any]]:
-    buckets: dict[Any, list[dict[str, Any]]] = {}
-    order: list[Any] = []
+def _parse_begin(value: Any) -> datetime.datetime | None:
+    if not value:
+        return None
+    try:
+        text = str(value).strip().replace("Z", "+00:00")
+        return datetime.datetime.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def _parse_end(value: Any) -> datetime.datetime | None:
+    dt = _parse_begin(value)
+    return dt
+
+
+def _aggregate_bucket(bucket: list[dict[str, Any]], begin: datetime.datetime, end: datetime.datetime) -> dict[str, Any]:
+    return {
+        "open": bucket[0]["open"],
+        "high": max(x["high"] for x in bucket),
+        "low": min(x["low"] for x in bucket),
+        "close": bucket[-1]["close"],
+        "volume": sum(x["volume"] for x in bucket),
+        "begin": begin.isoformat(sep=" "),
+        "end": end.isoformat(sep=" "),
+    }
+
+
+def _aggregate_intraday(candles: list[dict[str, Any]], minutes: int) -> list[dict[str, Any]]:
+    """
+    Build 4h/6h/12h candles from 60-minute MOEX candles.
+    Buckets are aligned to the market-day clock (e.g. 09:00, 13:00, 17:00 for 4h).
+    """
+    grouped: dict[tuple[datetime.date, int], list[tuple[datetime.datetime, dict[str, Any]]]] = {}
 
     for candle in candles:
-        key = key_fn(candle)
-        if key not in buckets:
-            buckets[key] = []
-            order.append(key)
-        buckets[key].append(candle)
-
-    result: list[dict[str, Any]] = []
-    for key in order:
-        group = buckets[key]
-        valid = [
-            c for c in group
-            if all(
-                c.get(k) is not None
-                for k in ("open", "high", "low", "close")
-            )
-        ]
-        if not valid:
+        dt = _parse_begin(candle.get("begin"))
+        if dt is None:
             continue
 
-        result.append({
-            "open": valid[0]["open"],
-            "high": max(float(c["high"]) for c in valid),
-            "low": min(float(c["low"]) for c in valid),
-            "close": valid[-1]["close"],
-            "volume": sum(float(c.get("volume") or 0) for c in valid),
-            "begin": valid[0].get("begin"),
-            "end": valid[-1].get("end"),
-        })
-
-    return result
-
-
-def _aggregate_intraday(
-    candles: list[dict[str, Any]],
-    hours_per_candle: int,
-) -> list[dict[str, Any]]:
-    # Preserve the exchange session and build 4h / 6h / 12h
-    # candles from consecutive 1-hour candles inside each trading day.
-    by_day: dict[str, list[dict[str, Any]]] = {}
-    order: list[str] = []
-
-    for candle in candles:
-        begin = str(candle.get("begin") or "")
-        day_key = begin[:10]
-        if day_key not in by_day:
-            by_day[day_key] = []
-            order.append(day_key)
-        by_day[day_key].append(candle)
+        bucket_hour = (dt.hour // (minutes // 60)) * (minutes // 60)
+        key = (dt.date(), bucket_hour)
+        grouped.setdefault(key, []).append((dt, candle))
 
     result: list[dict[str, Any]] = []
-    for day_key in order:
-        day = by_day[day_key]
-        for i in range(0, len(day), hours_per_candle):
-            group = day[i:i + hours_per_candle]
-            result.extend(_aggregate_buckets(
-                group,
-                lambda c, _i=i: _i
-            ))
+    for (day, hour), items in sorted(grouped.items()):
+        items.sort(key=lambda x: x[0])
+        bucket = [c for _, c in items]
+        begin = items[0][0].replace(hour=hour, minute=0, second=0, microsecond=0)
+        last_dt = _parse_end(bucket[-1].get("end")) or items[-1][0]
+        end = last_dt
+        result.append(_aggregate_bucket(bucket, begin, end))
 
     return result
 
 
-def _aggregate_days(
-    candles: list[dict[str, Any]],
-    days_per_candle: int,
-) -> list[dict[str, Any]]:
-    # Group daily candles into fixed calendar windows measured from
-    # the first available trading day in the requested range.
-    from datetime import datetime
+def _aggregate_trading_days(candles: list[dict[str, Any]], count: int) -> list[dict[str, Any]]:
+    """
+    Build N-trading-day candles from daily MOEX candles.
+    Every output candle contains N consecutive available trading sessions.
+    """
+    grouped_days: dict[datetime.date, list[dict[str, Any]]] = {}
 
-    if not candles:
-        return []
+    for candle in candles:
+        dt = _parse_begin(candle.get("begin"))
+        if dt is None:
+            continue
+        grouped_days.setdefault(dt.date(), []).append(candle)
 
-    first_begin = str(candles[0].get("begin") or "")
-    first_day = datetime.fromisoformat(first_begin.replace("Z", "")).date()
+    days = sorted(grouped_days)
+    day_buckets: list[list[dict[str, Any]]] = []
 
-    def key_fn(c):
-        begin = str(c.get("begin") or "")
-        current = datetime.fromisoformat(begin.replace("Z", "")).date()
-        return (current - first_day).days // days_per_candle
+    for i in range(0, len(days), count):
+        selected = days[i:i + count]
+        if not selected:
+            continue
+        bucket = []
+        for day in selected:
+            grouped_days[day].sort(key=lambda c: str(c.get("begin")))
+            bucket.extend(grouped_days[day])
+        if bucket:
+            day_buckets.append(bucket)
 
-    return _aggregate_buckets(candles, key_fn)
+    result = []
+    for bucket in day_buckets:
+        begin = _parse_begin(bucket[0].get("begin"))
+        end = _parse_end(bucket[-1].get("end")) or _parse_begin(bucket[-1].get("begin"))
+        if begin and end:
+            result.append(_aggregate_bucket(bucket, begin, end))
+    return result
 
 
-def _aggregate_months(
-    candles: list[dict[str, Any]],
-    months_per_candle: int,
-) -> list[dict[str, Any]]:
-    from datetime import datetime
+def _aggregate_months(candles: list[dict[str, Any]], months_per_candle: int) -> list[dict[str, Any]]:
+    """Build 1/3/6-month calendar candles."""
+    grouped: dict[tuple[int, int], list[dict[str, Any]]] = {}
 
-    def key_fn(c):
-        begin = str(c.get("begin") or "")
-        dt = datetime.fromisoformat(begin.replace("Z", ""))
-        month_index = dt.year * 12 + (dt.month - 1)
-        return month_index // months_per_candle
+    for candle in candles:
+        dt = _parse_begin(candle.get("begin"))
+        if dt is None:
+            continue
+        month_index = (dt.month - 1) // months_per_candle
+        key = (dt.year, month_index)
+        grouped.setdefault(key, []).append(candle)
 
-    return _aggregate_buckets(candles, key_fn)
+    result = []
+    for (year, block), bucket in sorted(grouped.items()):
+        bucket.sort(key=lambda c: str(c.get("begin")))
+        first_dt = _parse_begin(bucket[0].get("begin"))
+        end_dt = _parse_end(bucket[-1].get("end")) or _parse_begin(bucket[-1].get("begin"))
+        if first_dt and end_dt:
+            result.append(_aggregate_bucket(bucket, first_dt, end_dt))
+    return result
 
 
 def _aggregate_years(candles: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    from datetime import datetime
+    """Build one candle per calendar year."""
+    grouped: dict[int, list[dict[str, Any]]] = {}
 
-    def key_fn(c):
-        begin = str(c.get("begin") or "")
-        dt = datetime.fromisoformat(begin.replace("Z", ""))
-        return dt.year
+    for candle in candles:
+        dt = _parse_begin(candle.get("begin"))
+        if dt is None:
+            continue
+        grouped.setdefault(dt.year, []).append(candle)
 
-    return _aggregate_buckets(candles, key_fn)
+    result = []
+    for year, bucket in sorted(grouped.items()):
+        bucket.sort(key=lambda c: str(c.get("begin")))
+        begin = _parse_begin(bucket[0].get("begin"))
+        end = _parse_end(bucket[-1].get("end")) or _parse_begin(bucket[-1].get("begin"))
+        if begin and end:
+            result.append(_aggregate_bucket(bucket, begin, end))
+    return result
 
 
 def get_candles(
@@ -338,55 +329,72 @@ def get_candles(
     interval: int = 60,
     days: int = 14,
 ) -> list[dict[str, Any]]:
+    """
+    Return candles for any UI timeframe.
+
+    MOEX is queried at a native/base interval where practical:
+      1m/5m/15m/30m/1h -> directly from ISS
+      4h/6h/12h       -> aggregate 1h candles
+      1d and above    -> aggregate daily candles
+    """
+    if interval <= 60:
+        base_interval = interval
+        source_days = days
+    elif interval < 1440:
+        base_interval = 60
+        # Extra calendar room because weekends/holidays do not produce candles.
+        source_days = min(3650, max(days + 14, int(days * 1.25)))
+    else:
+        base_interval = 24 * 60
+        source_days = min(3650, max(days + 30, int(days * 1.20)))
+
     till = date.today()
-    since = till - timedelta(days=days)
+    since = till - timedelta(days=source_days)
 
-    # Direct MOEX intervals:
-    # 1 minute, 1 hour, and 1 day are used as the reliable base grids.
-    if interval in (1, 60, 1440):
-        base_interval = {1: 1, 60: 60, 1440: 24}[interval]
-        return _fetch_candles_page(symbol, base_interval, since, till)
+    url = (
+        f"{MOEX_ISS}/engines/stock/markets/shares/"
+        f"boards/{BOARD}/securities/{symbol}/candles.json"
+    )
 
-    # 5/15/30 minute charts: try the requested grid first. If ISS
-    # does not expose it for the board, fall back to 1-minute candles
-    # and aggregate locally.
-    if interval in (5, 15, 30):
-        try:
-            return _fetch_candles_page(symbol, interval, since, till)
-        except Exception:
-            base = _fetch_candles_page(symbol, 1, since, till)
-            return _aggregate_buckets(
-                base,
-                lambda c, n=interval: (
-                    str(c.get("begin") or "")[:10],
-                    (
-                        int(str(c.get("begin") or "")[11:13]) * 60
-                        + int(str(c.get("begin") or "")[14:16])
-                    ) // n,
-                ),
-            )
+    payload = fetch_json(url, {
+        "iss.meta": "off",
+        "from": since.isoformat(),
+        "till": till.isoformat(),
+        "interval": base_interval,
+        "start": 0,
+    })
 
-    # 4h / 6h / 12h from the 1-hour grid.
-    if interval in (240, 360, 720):
-        base = _fetch_candles_page(symbol, 60, since, till)
-        return _aggregate_intraday(base, interval // 60)
+    base = []
+    for item in rows(payload, "candles"):
+        candle = _clean_candle(item)
+        if candle:
+            base.append(candle)
 
-    # Day-based timeframes from the daily grid.
-    if interval in (4320, 10080, 20160):
-        base = _fetch_candles_page(symbol, 24, since, till)
-        return _aggregate_days(base, interval // 1440)
+    if interval <= 60:
+        return base
 
-    # Month-based timeframes.
-    if interval in (43200, 129600, 259200):
-        base = _fetch_candles_page(symbol, 24, since, till)
-        return _aggregate_months(base, interval // 43200)
+    if interval < 1440:
+        return _aggregate_intraday(base, interval)
 
-    # 1-year candles.
-    if interval == 525600:
-        base = _fetch_candles_page(symbol, 24, since, till)
+    if interval == 1440:
+        return base
+
+    if interval in (3 * 1440, 7 * 1440, 14 * 1440):
+        return _aggregate_trading_days(base, interval // 1440)
+
+    if interval == 30 * 1440:
+        return _aggregate_months(base, 1)
+
+    if interval == 90 * 1440:
+        return _aggregate_months(base, 3)
+
+    if interval == 180 * 1440:
+        return _aggregate_months(base, 6)
+
+    if interval == 365 * 1440:
         return _aggregate_years(base)
 
-    raise HTTPException(status_code=400, detail="Unsupported interval")
+    raise ValueError(f"Unsupported candle interval: {interval}")
 
 
 def get_spark(symbol: str) -> list[float]:
@@ -443,6 +451,16 @@ def candles(
 ) -> dict[str, Any]:
     if symbol not in TICKERS:
         raise HTTPException(status_code=404, detail="Unknown symbol")
+
+    supported = {
+        1, 5, 15, 30, 60,
+        240, 360, 720,
+        1440, 4320, 10080, 20160,
+        43200, 129600, 259200,
+        525600,
+    }
+    if interval not in supported:
+        raise HTTPException(status_code=400, detail="Unsupported candle interval")
 
     return {
         "symbol": symbol,
